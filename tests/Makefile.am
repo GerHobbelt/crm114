@@ -128,8 +128,9 @@ EXTRA_DIST = megatest_knowngood.log \
  
 
 
+TESTS = test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 
-megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
+test_megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -156,7 +157,7 @@ megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
 	$(diff) $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
 
 
-megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest_ng.sh
+test_megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest_ng.sh
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -185,7 +186,7 @@ megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest_ng
 
 
 
-test: test_basics test_other test_megatest test_mailfilter test_mailreaver
+test: test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 
 
 # series of basic regression tests for CRM114:

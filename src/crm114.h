@@ -944,6 +944,7 @@ int is_stdout_err_or_null(FILE *f);
  * CRM114 version/portability header support
  */
 int is_crm_headered_file(FILE *f);
+int is_crm_headered_mmapped_file(void *buf, size_t length);
 int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, const char *human_readable_message);
 int crm_correct_for_version_header(void **ptr, int *len);
 int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_native, CRM_DECODED_PORTA_HEADER_INFO *dst);

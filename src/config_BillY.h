@@ -557,13 +557,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20080325-BlameSentansoken"
+#define PACKAGE_STRING "CRM114 20080326-BlameSentansoken"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20080325-BlameSentansoken"
+#define PACKAGE_VERSION "20080326-BlameSentansoken"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -573,6 +573,9 @@
 
 /* Define to 1 if the C compiler supports function prototypes. */
 #define PROTOTYPES 1
+
+/* revision code of the software */
+#define REVISION "1960"
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
@@ -595,13 +598,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1954"
+#define TAR_FILENAME_POSTFIX "Ger-1960"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20080325-BlameSentansoken"
+#define VERSION "20080326-BlameSentansoken"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

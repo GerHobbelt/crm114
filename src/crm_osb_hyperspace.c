@@ -66,7 +66,7 @@
 //     weaker implication of class membership.
 //
 //     2A) Dominance can be modulated by length normalization as well,
-//     so a very int document that contains lots of features will not
+//     so a very long document that contains lots of features will not
 //     dominate a short document very much at all.
 //
 //     3) Radiance:  use a non-linear match such as radiance to determine
@@ -102,7 +102,7 @@
 //    Option A2 - inline valued - Store the 32-bit sorted hashes as
 //      { hashcode, float_Weight } structs.  This allows merging of
 //      multiple close features into a single feature vector when the
-//      file gets too int. (foreach feature vec pair, measure dominant
+//      file gets too long. (foreach feature vec pair, measure dominant
 //      overlaps or distances, and merge the two with either the closest
 //      match or the smallest dominant overlap)
 //
@@ -354,7 +354,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
     //    pre-existing memory.  We just write to the end of the file instead.
     //    malloc up the unsorted hashbucket space
-    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
+    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for the sentinel at worst case! */, 
             sizeof(hashes[0]));
     hashcounts = 0;
     //  put in a zero as the start marker.
@@ -633,6 +633,9 @@ regcomp_failed:
     h = 0;
     k = 0;
 
+  //    Are we actually calling the vector tokenizer??
+  //  fprintf (stderr, "gweep!!\n");
+
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
     (apb,                                  // the APB
@@ -655,10 +658,8 @@ regcomp_failed:
 #if USE_FIXED_UNIQUE_MODE
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-    //mark the end of a feature vector
-    hashes[hashcounts].hash = 0;
 
-    if (user_trace)
+    if (internal_trace)
 	{
         fprintf(stderr, "Total unsorted hashes generated: %d\n", hashcounts);
 		for (i = 0; i < hashcounts; i++)
@@ -672,9 +673,9 @@ regcomp_failed:
     QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
             hash_compare);
 
-    if (user_trace)
+    if (internal_trace)
 	{
-        fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
+        fprintf(stderr, "Total hashes generated PRE-unique: %d\n", hashcounts);
 		for (i = 0; i < hashcounts; i++)
 		{
 			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
@@ -700,9 +701,10 @@ regcomp_failed:
          }
          hashcounts = j;
 
-        //mark the end of a feature vector
-        hashes[hashcounts].hash = 0;
     }
+
+  //    Put in a sentinel zero.
+        hashes[hashcounts].hash = 0;
 
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -714,31 +716,57 @@ regcomp_failed:
     QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
             hash_compare);
 
-    hashcounts--;
     if (user_trace)
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 
-    //   And uniqueify the hashes array
-    //
+  i = 0;
+  j = 0;
 
-    i = 1;
-    j = 1;
-
-    if (unique)
+  if (internal_trace)
+    fprintf (stderr, "Pre-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+	     hashcounts,
+	     hashes[0].hash,
+	     hashes[1].hash,
+	     hashes[2].hash,
+	     hashes[3].hash,
+	     hashes[4].hash,
+	     hashes[5].hash,
+	     hashes[6].hash,
+	     hashes[7].hash);
+  
+  if (unique)
     {
-        while (i <= hashcounts)
-        {
-            if (hashes[i].hash != hashes[i + 1].hash
-                //      || hashes[i].key != hashes[i+1].key )
-               )
-            {
-                hashes[j] = hashes[i];
-                j++;
-            }
-            i++;
-        }
-        hashcounts = j;
-    }
+      while ( i <= hashcounts )
+      {
+	if (hashes[i].hash != hashes[i+1].hash
+	    //	    || hashes[i].key != hashes[i+1].key )
+	    )
+	  {
+	    hashes[j]= hashes[i];
+	    j++;
+	  };
+	i++;
+      };
+      hashcounts = j;
+    };
+
+  //    Put in a sentinel zero.
+  hashes[hashcounts].hash = 0;
+
+  //Debug print
+  if (internal_trace)
+    fprintf (stderr, "Post-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+	     hashcounts,
+	     hashes[0].hash,
+	     hashes[1].hash,
+	     hashes[2].hash,
+	     hashes[3].hash,
+	     hashes[4].hash,
+	     hashes[5].hash,
+	     hashes[6].hash,
+	     hashes[7].hash);
+
+
 #endif
 
     if (user_trace)
@@ -899,9 +927,9 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             if (internal_trace)
 			{
                 fprintf(stderr,
-                        "At featstart, looking at %d (next bucket value is %d)\n",
-                        (int)file_hashes[thisstart].hash,
-						(thisstart + 1 < file_hashlens ? (int)file_hashes[thisstart + 1].hash : 0));
+		   "At featstart, looking at %ld (next bucket value is %ld)\n",
+                        (unsigned long int)file_hashes[thisstart].hash,
+						(thisstart + 1 < file_hashlens ? (unsigned long int)file_hashes[thisstart + 1].hash : 0));
 			}
 			while (wrapup == 0)
             {
@@ -968,9 +996,9 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             if (internal_trace)
 			{
                 fprintf(stderr,
-                        "At featend, looking at %d (next bucket value is %d)\n",
-                        (int)file_hashes[thisend].hash,
-						(thisend + 1 < file_hashlens ? (int)file_hashes[thisend + 1].hash : 0));
+		     "At featend, looking at %ld (next bucket value is %ld)\n",
+                        (unsigned long int)file_hashes[thisend].hash,
+						(thisend + 1 < file_hashlens ? (unsigned long int)file_hashes[thisend + 1].hash : 0));
 			}
 
             //  end of a document- process accumulations
@@ -1222,7 +1250,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fprintf(stderr, "executing a CLASSIFY\n");
 
     //        make the space for the unknown text's hashes
-    unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
+    unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for sentinel at worst case! */,
             sizeof(unk_hashes[0]));
     unk_hashcount = 0;
 #ifndef VECTOR_TOKENIZER
@@ -1490,6 +1518,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         nonfatalerror("Couldn't open at least 1 .css files for classify().", "");
     }
+
+    //    a CLASSIFY with no arguments is always a "success".
+    if (maxhash == 0)
+        return 0;
+
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
     {
@@ -1497,10 +1530,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 "Couldn't open at least 1 .css file per SUCC | FAIL category "
                 "for classify().\n", "Hope you know what are you doing.");
     }
-
-    //    a CLASSIFY with no arguments is always a "success".
-    if (maxhash == 0)
-        return 0;
 
 
 
@@ -1735,15 +1764,17 @@ classify_end_regex_loop:
     if (user_trace)
         fprintf(stderr, "Total hashes in the unknown text: %d\n", unk_hashcount + 1);
 
+
+
     //       uniqueify the hashes array.
     i = 1;
     j = 1;
     if (use_unique)
     {
-        while (i <= unk_hashcount)
+      while (i <= unk_hashcount)
         {
-            if (unk_hashes[i].hash != unk_hashes[i + 1].hash
-                //              || unk_hashes[i].key != unk_hashes[i+1].key)
+	  if (unk_hashes[i].hash != unk_hashes[i+1].hash 
+	      //	      || unk_hashes[i].key != unk_hashes[i+1].key)
                )
             {
                 unk_hashes[j] = unk_hashes[i];
@@ -2401,7 +2432,13 @@ classify_end_regex_loop:
     }
 
 
-    if (tprob <= 0.5)
+  if (tprob > 0.5)
+    {
+      //   all done... if we got here, we should just continue execution
+      if (user_trace)
+	fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+    }
+  else
     {
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
@@ -2410,12 +2447,7 @@ classify_end_regex_loop:
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }
-
-
-    //
-    //   all done... if we got here, we should just continue execution
-    if (user_trace)
-        fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+  //    
 regcomp_failed:
     return 0;
 }

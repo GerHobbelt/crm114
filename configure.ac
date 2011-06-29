@@ -11,7 +11,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20080325-BlameSentansoken, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20080326-BlameSentansoken, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -25,15 +25,6 @@ AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR(src/crm_main.c)
 AC_CONFIG_HEADERS(src/config.h)
 
-#REVISION=`date +%Y%m%dT%H%M`
-#AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [revision code of the software])
-#AC_SUBST(REVISION)
-
-# VER_SUFFIX=Ger-`date +%m%dT%H`
-VER_SUFFIX=
-AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
-AC_SUBST(VER_SUFFIX)
-
 # one build every three hours is the fastest I can do... I guess ;-)
 # At least this'll give me at least 3 years of build numbering before I run out of
 # the 4 digit set. And then who cares when a fifth digit is required, eh?
@@ -43,6 +34,16 @@ let "buildnumber=(`date +%s` - 1185402255) / 10800"
 TAR_FILENAME_POSTFIX=Ger-$buildnumber
 AC_DEFINE_UNQUOTED(TAR_FILENAME_POSTFIX, "$TAR_FILENAME_POSTFIX", [distribution archive filename postfix code of the software])
 AC_SUBST(TAR_FILENAME_POSTFIX)
+
+#REVISION=`date +%Y%m%dT%H%M`
+REVISION=$buildnumber
+AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [revision code of the software])
+AC_SUBST(REVISION)
+
+# VER_SUFFIX=Ger-`date +%m%dT%H`
+VER_SUFFIX=
+AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
+AC_SUBST(VER_SUFFIX)
 
 
 
@@ -538,10 +539,13 @@ AC_CANONICAL_HOST
 AC_DEFINE_UNQUOTED(HOSTTYPE, "$host_os", [Set host type])
 
 
-# Checks for libraries.
-AC_CHECK_LIB([m], [matherr])
 
-# ## of course, this checking for Tre and stuff could better be handled using pkg-config
+# Check for library functions
+AC_SEARCH_LIBS([sqrt], [m])
+
+
+
+# ## of course, this checking for TRE and stuff could better be handled using pkg-config
 # ## possibly, tre might need to get patched for this: it should ship a .pc file.
 # crm_gnu_regex=no
 # AC_CHECK_LIB([tre], [regcomp])
@@ -568,7 +572,7 @@ AC_ARG_WITH(regex-libraries,
   [  --with-regex-libraries=DIR   where you have regex libraries],
   WITH_REGEX_LIB="$withval")
 if test -n "$WITH_REGEX_LIB"; then
-  LDFLAGS="$LDFLAGS -L$WITH_REGEX_LIB"
+  LDFLAGS="$LDFLAGS -l$WITH_REGEX_LIB"
 fi
 
 dnl ********************************
@@ -609,12 +613,12 @@ if eval "test x$want_regex_impl = xyes"; then
       LIBS="$LIBS $tre_libs"
       want_regex_impl=no
     else
-      AC_CHECK_LIB(tre, tre_compile, [
+      AC_SEARCH_LIBS([tre_compile], [tre], [
         AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
         AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1,
           [TRE REs])
         AC_CHECK_HEADERS(tre/regex.h)
-        LIBS="$LIBS -ltre";want_regex_impl="no"])
+        want_regex_impl="no"])
     fi
   fi
 fi

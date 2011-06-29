@@ -1,3 +1,10 @@
+2008-03-26 Ger Hobbelt
+
+    * updated to Bill's latest release (20080326)
+    
+    * fixed a dumb mistake in crmregex_tre.c which I'd introduced myself :-(
+    
+
 2008-03-25 Ger Hobbelt
 
     * 'int'ified ('INTifada') crm114 sources - finally got fed up and killed the 

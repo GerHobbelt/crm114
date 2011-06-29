@@ -1,4 +1,4 @@
- This is CRM114, version 20080325-BlameSentansoken (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20080326-BlameSentansoken (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -205,8 +205,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 19836 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 19836 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 9467 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 9467 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -543,37 +543,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099037
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099035
 Bytes used per pass: 2097150
 Passes done: 100 
 Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099054 
+OK_IF_SIZE_CHANGES: Final isolation size: 2099052 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101519
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101517
 Bytes used per pass: 2097150
 Passes done: 10 
 Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101534 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101532 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2097150
 Passes done: 20 
 Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101540 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101538 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2097150
 Passes done: 30 
 Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101541 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101539 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2097150
 Passes done: 40 
 Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101541 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101539 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -661,7 +661,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20080325-BlameSentansoken ( TRE 0.7.5 (LGPL) )
+version: 20080326-BlameSentansoken ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -835,34 +835,34 @@ Total features in input file: 10
 
 **** OSB Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0773  pR: -10.7693
-Best match to file #1 (q_test.css) prob: 0.9227  pR: 10.7693  
-Total features in input file: 54
-#0 (i_test.css): features: 32250, hits: 12, radiance: 4.46e-03, prob: 7.73e-02, pR: -10.77 
-#1 (q_test.css): features: 30070, hits: 40, radiance: 5.33e-02, prob: 9.23e-01, pR:  10.77 
+CLASSIFY fails; success probability: 0.0315  pR: -14.8787
+Best match to file #1 (q_test.css) prob: 0.9685  pR: 14.8787  
+Total features in input file: 43
+#0 (i_test.css): features: 29640, hits: 6, radiance: 1.21e-03, prob: 3.15e-02, pR: -14.88 
+#1 (q_test.css): features: 27466, hits: 32, radiance: 3.73e-02, prob: 9.69e-01, pR:  14.88 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9470  pR: 12.5232
-Best match to file #0 (i_test.css) prob: 0.9470  pR: 12.5232  
-Total features in input file: 49
-#0 (i_test.css): features: 32250, hits: 35, radiance: 3.80e-02, prob: 9.47e-01, pR:  12.52 
-#1 (q_test.css): features: 30070, hits: 8, radiance: 2.13e-03, prob: 5.30e-02, pR: -12.52 
+CLASSIFY succeeds; success probability: 0.9799  pR: 16.8836
+Best match to file #0 (i_test.css) prob: 0.9799  pR: 16.8836  
+Total features in input file: 39
+#0 (i_test.css): features: 29640, hits: 29, radiance: 2.84e-02, prob: 9.80e-01, pR:  16.88 
+#1 (q_test.css): features: 27466, hits: 4, radiance: 5.82e-04, prob: 2.01e-02, pR: -16.88 
 
 
 **** OSB three-letter Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.3154  pR: -3.3659
-Best match to file #1 (q_test.css) prob: 0.6846  pR: 3.3659  
-Total features in input file: 114
-#0 (i_test.css): features: 64989, hits: 27, radiance: 1.12e-02, prob: 3.15e-01, pR:  -3.37 
-#1 (q_test.css): features: 65739, hits: 40, radiance: 2.43e-02, prob: 6.85e-01, pR:   3.37 
+CLASSIFY fails; success probability: 0.1569  pR: -7.3023
+Best match to file #1 (q_test.css) prob: 0.8431  pR: 7.3023  
+Total features in input file: 91
+#0 (i_test.css): features: 60824, hits: 9, radiance: 1.33e-03, prob: 1.57e-01, pR:  -7.30 
+#1 (q_test.css): features: 61656, hits: 21, radiance: 7.15e-03, prob: 8.43e-01, pR:   7.30 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9169  pR: 10.4262
-Best match to file #0 (i_test.css) prob: 0.9169  pR: 10.4262  
-Total features in input file: 84
-#0 (i_test.css): features: 64989, hits: 66, radiance: 6.71e-02, prob: 9.17e-01, pR:  10.43 
-#1 (q_test.css): features: 65739, hits: 20, radiance: 6.08e-03, prob: 8.31e-02, pR: -10.43 
+CLASSIFY succeeds; success probability: 0.9713  pR: 15.3003
+Best match to file #0 (i_test.css) prob: 0.9713  pR: 15.3003  
+Total features in input file: 67
+#0 (i_test.css): features: 60824, hits: 52, radiance: 4.45e-02, prob: 9.71e-01, pR:  15.30 
+#1 (q_test.css): features: 61656, hits: 9, radiance: 1.31e-03, prob: 2.87e-02, pR: -15.30 
 
 
 **** Unigram Hyperspace classifier 
@@ -883,50 +883,50 @@ Total features in input file: 9
 
 **** String Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -216.3482
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 216.3482  
+CLASSIFY fails; success probability: 0.0000  pR: -216.3477
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 216.3477  
 Total features in input file: 10
-#0 (i_test.css): features: 8808, hits: 0, radiance: 0.00e+00, prob: 2.32e-22, pR: -216.35 
-#1 (q_test.css): features: 8348, hits: 6, radiance: 4.31e-03, prob: 1.00e+00, pR: 216.35 
+#0 (i_test.css): features: 8809, hits: 0, radiance: 0.00e+00, prob: 2.32e-22, pR: -216.35 
+#1 (q_test.css): features: 8349, hits: 6, radiance: 4.31e-03, prob: 1.00e+00, pR: 216.35 
 
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 214.5311
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 214.5311  
+CLASSIFY succeeds; success probability: 1.0000  pR: 214.5306
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 214.5306  
 Total features in input file: 9
-#0 (i_test.css): features: 8808, hits: 5, radiance: 2.84e-03, prob: 1.00e+00, pR: 214.53 
-#1 (q_test.css): features: 8348, hits: 0, radiance: 0.00e+00, prob: 3.52e-22, pR: -214.53 
+#0 (i_test.css): features: 8809, hits: 5, radiance: 2.84e-03, prob: 1.00e+00, pR: 214.53 
+#1 (q_test.css): features: 8349, hits: 0, radiance: 0.00e+00, prob: 3.52e-22, pR: -214.53 
 
 
 **** String Unigram Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.2962  pR: -3.7580
-Best match to file #1 (q_test.css) prob: 0.7038  pR: 3.7580  
+CLASSIFY fails; success probability: 0.2962  pR: -3.7579
+Best match to file #1 (q_test.css) prob: 0.7038  pR: 3.7579  
 Total features in input file: 10
-#0 (i_test.css): features: 8808, hits: 6, radiance: 4.09e-03, prob: 2.96e-01, pR:  -3.76 
-#1 (q_test.css): features: 8348, hits: 9, radiance: 9.71e-03, prob: 7.04e-01, pR:   3.76 
+#0 (i_test.css): features: 8809, hits: 6, radiance: 4.09e-03, prob: 2.96e-01, pR:  -3.76 
+#1 (q_test.css): features: 8349, hits: 9, radiance: 9.71e-03, prob: 7.04e-01, pR:   3.76 
 
  type I 
 CLASSIFY succeeds; success probability: 0.6277  pR: 2.2677
 Best match to file #0 (i_test.css) prob: 0.6277  pR: 2.2677  
 Total features in input file: 9
-#0 (i_test.css): features: 8808, hits: 8, radiance: 7.27e-03, prob: 6.28e-01, pR:   2.27 
-#1 (q_test.css): features: 8348, hits: 6, radiance: 4.31e-03, prob: 3.72e-01, pR:  -2.27 
+#0 (i_test.css): features: 8809, hits: 8, radiance: 7.27e-03, prob: 6.28e-01, pR:   2.27 
+#1 (q_test.css): features: 8349, hits: 6, radiance: 4.31e-03, prob: 3.72e-01, pR:  -2.27 
 
 
 **** Vector 3-word-bag Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -217.6882
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 217.6882  
+CLASSIFY fails; success probability: 0.0000  pR: -217.6877
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 217.6877  
 Total features in input file: 10
-#0 (i_test.css): features: 8808, hits: 0, radiance: 0.00e+00, prob: 1.70e-22, pR: -217.69 
-#1 (q_test.css): features: 8348, hits: 7, radiance: 5.87e-03, prob: 1.00e+00, pR: 217.69 
+#0 (i_test.css): features: 8809, hits: 0, radiance: 0.00e+00, prob: 1.70e-22, pR: -217.69 
+#1 (q_test.css): features: 8349, hits: 7, radiance: 5.87e-03, prob: 1.00e+00, pR: 217.69 
 
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 217.4557
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 217.4557  
+CLASSIFY succeeds; success probability: 1.0000  pR: 217.4552
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 217.4552  
 Total features in input file: 9
-#0 (i_test.css): features: 8808, hits: 7, radiance: 5.57e-03, prob: 1.00e+00, pR: 217.46 
-#1 (q_test.css): features: 8348, hits: 0, radiance: 0.00e+00, prob: 1.80e-22, pR: -217.46 
+#0 (i_test.css): features: 8809, hits: 7, radiance: 5.57e-03, prob: 1.00e+00, pR: 217.46 
+#1 (q_test.css): features: 8349, hits: 0, radiance: 0.00e+00, prob: 1.80e-22, pR: -217.46 
 
 
 **** Bit-Entropy classifier 
@@ -978,39 +978,19 @@ Total features in input file: 51
 
 
 **** Neural Network Classifier 
-
-./crm114: *WARNING* 
- neural: failed to converge within the training limit.   Beware your results.
- You might want to consider a larger network as well.
-I'll try to keep working.
-This happened at line 2 of file (from command line)
-(runtime system location: crm_neural_net.c(1678) in routine: crm_neural_net_learn)
-The line was: 
---> learn < neural refute fromstart > (q_test.css) 
-<--
-
-./crm114: *WARNING* 
- neural: failed to converge within the training limit.   Beware your results.
- You might want to consider a larger network as well.
-I'll try to keep working.
-This happened at line 2 of file (from command line)
-(runtime system location: crm_neural_net.c(1678) in routine: crm_neural_net_learn)
-The line was: 
---> learn < neural refute fromstart > (i_test.css) 
-<--
  type Q 
-CLASSIFY fails; success probability: 0.393070  pR: -1.6237
-Best match to file #1 (q_test.css) prob: 0.6069  pR: 1.6237  
-Total features in input file: 335
-#0 (i_test.css): prob: 3.93e-01, pR:  -1.62
-#1 (q_test.css): prob: 6.07e-01, pR:   1.62
+CLASSIFY fails; success probability: 0.241661  pR: -62.5048
+Best match to file #1 (q_test.css) prob: 0.7583  pR: 62.5048  
+Total features in input file: 268
+#0 (i_test.css): prob: 2.42e-01, pR: -62.50
+#1 (q_test.css): prob: 7.58e-01, pR:  62.50
 
- type Q 
-CLASSIFY fails; success probability: 0.449258  pR: -0.5074
-Best match to file #1 (q_test.css) prob: 0.5507  pR: 0.5074  
-Total features in input file: 465
-#0 (i_test.css): prob: 4.49e-01, pR:  -0.51
-#1 (q_test.css): prob: 5.51e-01, pR:   0.51
+ type I 
+CLASSIFY succeeds; success probability: 0.889200  pR: 189.2001
+Best match to file #0 (i_test.css) prob: 0.8892  pR: 189.2001  
+Total features in input file: 372
+#0 (i_test.css): prob: 8.89e-01, pR: 189.20
+#1 (q_test.css): prob: 1.11e-01, pR: -189.20
 
  Alternating Example Neural Network Classifier TRAINING 
 

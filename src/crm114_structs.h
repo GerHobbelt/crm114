@@ -364,9 +364,7 @@ typedef struct mythical_entropy_cell
 //           Neural Net classifier
 #define CRM_NEURAL_NET    (1LL << 37)
 
-#define CRM_FLAT          (1LL << 38)
-
-#define CRM_AUTODETECT    (1LL << 39)
+#define CRM_AUTODETECT    (1LL << 38)
 
 
 //

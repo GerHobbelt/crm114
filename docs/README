@@ -20,6 +20,23 @@ Now that we're clear on that, let's begin.
 
                     ----- News This Release: -----
 
+March 26, 2008 - BlameSentansoken
+
+This release is basically a bugfix release and includes some (but not
+all) fixes to the Hyperspace classifier, the vector tokenizer (VT),
+and the neural network.  Many thanks to Paolo, Ger, and the other mailing
+list denizens who found the bugs.  The neural network can now learn nonlinear
+problems in reasonable times (such as the classic XOR problem).  It
+also includes a new example - alternating_example_neural.crm.  This is
+a good example of how to turn a single big example file into a number
+of small ones (which is recommended).  If you run it as "crm -t
+alternating_example_neural.crm" you also get an amusing look at the
+neural net as it trains (and no, I did not intentionally make it into
+a "The Matrix" style output- that was actually the natural way to
+express the state of the training).  Upgrade to this version only if
+you are using Hyperspace or the Neural Network.
+
+
 Feb 13, 2008 - BlameJoeLangeway_VT
 
 This release includes an improved vector tokenizer (that is, VT),

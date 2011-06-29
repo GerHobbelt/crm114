@@ -36,12 +36,12 @@
  *
  * for a discussion about this in a different setting. Quoting:
  *
- *              [...] Windows has no way to say "here's a file, change
- *              the size to such-and-such"; the only way is to set the file pointer to the
- *              desired size, and then call the no-argument Win32 SetEndOfFile(); Python
- *used* to use the MS C _chsize() function, but that did insane things when
- *              passed a "large" size; the SetEndOfFile() code was introduced as part of
- *              fixing Python's Windows largefile support.
+ *   [...] Windows has no way to say "here's a file, change
+ *   the size to such-and-such"; the only way is to set the file pointer to the
+ *   desired size, and then call the no-argument Win32 SetEndOfFile(); Python
+ *   *used* to use the MS C _chsize() function, but that did insane things when
+ *   passed a "large" size; the SetEndOfFile() code was introduced as part of
+ *   fixing Python's Windows largefile support.
  *
  *
  * function: truncate file to the spcified filesize. Return 0 on success, otherwise
@@ -61,13 +61,17 @@ int truncate(const char *filepath, long int filesize)
         {
             ret = !SetEndOfFile(f);
         }
-        CloseHandle(f);
+        ret = (S_OK != CloseHandle(f));
+		if (ret)
+		{
+		    errno = EINVAL;     /* fake errno code; too lazy to translate those GetLastError() numbers to errno's now... */
+		}
     }
     else
     {
         ret = !0;
+	    errno = EINVAL;     /* fake errno code; too lazy to translate those GetLastError() numbers to errno's now... */
     }
-    errno = EINVAL;     /* fake errno code; too lazy to translate those GetLastError() numbers to errno's now... */
     return ret;
 }
 #endif

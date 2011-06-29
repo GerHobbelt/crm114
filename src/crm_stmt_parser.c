@@ -72,7 +72,6 @@ const FLAG_DEF crm_flags[] =
     { "svm", CRM_SVM },
     { "fscm", CRM_FSCM },
     { "neural", CRM_NEURAL_NET },
-    { "flat", CRM_FLAT },
     { "auto", CRM_AUTODETECT },
     { "autodetect", CRM_AUTODETECT },
     { NULL, 0 }   /* [i_a] sentinel */

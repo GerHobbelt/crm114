@@ -3,6 +3,11 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+version 20080326-BlameSentansoken
+
+ * TRE interface regex cache fix (my booboo :-( )
+ 
+ 
 version 20080325-BlameSentansoken
 
  * INTifada: 'long' fetish has been removed from the code: now everything is an 'int'

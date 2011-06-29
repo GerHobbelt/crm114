@@ -236,11 +236,11 @@
 
 #if defined (HAVE_TRE_REGEX_H)
 #include <tre/regex.h>
-#elif defined (HAVE_REGEX_H)
-#include <regex.h>
+//#elif defined (HAVE_REGEX_H)  -- [i_a] discarded this as it led to errors on other systems, where multiple RE packages may be installed.
+//#include <regex.h>            --       This also means this code now requires the libtre source distro as available on hebbut.net to compile out of the box on MSVC2005.
 #else
 #error \
-    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Are you sure you installed the TRE and TRE-DEVEL packages on your UNIX box?   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 typedef struct
@@ -371,7 +371,7 @@ char *my_strnchr(const char *str, int c, size_t len);
 #if defined(HAVE__ISNAN)
 #define isnan(v)		_isnan(v)
 #else
-#error point isnan() to your platform's equivalent function
+#error "point isnan() to your platform's equivalent function"
 #endif
 #endif
 
@@ -773,7 +773,7 @@ static inline int crm_isxdigit(unsigned char c)
 #if defined (HAVE_LOGL)
 #define crm_logl(val)       logl(val)
 #else
-#error define/find a suitable high precision log10 function for your system
+#error "define/find a suitable high precision log10 function for your system"
 #endif
 #endif
 

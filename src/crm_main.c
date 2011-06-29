@@ -1,5 +1,5 @@
 //  crm_main.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2008  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -380,10 +380,11 @@ int main(int argc, char **argv)
             || (strncmp(argv[i], "-h", 2) == 0)
             || (argc == 1))
         {
-            fprintf(stderr, " CRM114 version %s (regex engine: %s)\n "
+            fprintf(stderr, " CRM114 version %s, rev %s (regex engine: %s)\n "
                    , VERSION
+				   , REVISION
                    , crm_regversion());
-            fprintf(stderr, " Copyright 2001-2007 William S. Yerazunis\n");
+            fprintf(stderr, " Copyright 2001-2008 William S. Yerazunis\n");
             fprintf(stderr, " This software is licensed under the GPL "
                             "with ABSOLUTELY NO WARRANTY\n");
             fprintf(stderr, "     For language help, RTFRM.\n");
@@ -768,11 +769,12 @@ int main(int argc, char **argv)
             int partlen;
 
             //   NOTE - version info goes to stdout, not stderr, just like GCC does
-			fprintf(stdout, " This is CRM114, version %s (%s) (OS: %s)\n"
+			fprintf(stdout, " This is CRM114, version %s, rev %s (%s) (OS: %s)\n"
                    , VERSION
+				   , REVISION
                    , crm_regversion()
 				   , HOSTTYPE);
-            fprintf(stdout, " Copyright 2001-2007 William S. Yerazunis\n");
+            fprintf(stdout, " Copyright 2001-2008 William S. Yerazunis\n");
             fprintf(stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             fprintf(stdout, "\n"
                             "Classifiers included in this build:\n");

@@ -76,9 +76,11 @@ Command Line Options:
 
  -err file      - use file instead of stderr for output. Note that '-out' may
                   use the same file as '-err'. Note also that '-out' and '-err'
-                  may specify the standard handle values '1' for stdout and 
-                  '2' for stderr. This implies that '-err 1' is essentially 
-                  identical to the UNIX shell '2>&1' redirection.
+                  may specify the standard
+
+                - handle values '1' for stdout and '2' for stderr. This implies
+                  that '-err 1' is essentially identical to the UNIX shell
+                  '2>&1' redirection.
 
  -Cdbg          - direct developer support: trigger the C/IDE debugger when an
                   internal error is hit.

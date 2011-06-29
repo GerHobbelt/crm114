@@ -55,7 +55,7 @@
 //    The feature building is controlled via the pipeline coefficient
 //    arrays as described in the paper "A Unified Approach To Spam
 //    Filtration".  In short, each row of an array describes one
-//    rendition of an arbitrarily int pipeline of hashed token
+//    rendition of an arbitrarily long pipeline of hashed token
 //    values; each row of the array supplies one output value.  Thus,
 //    the 1x1 array {1} yields unigrams, the 5x6 array
 //
@@ -99,7 +99,7 @@ int crm_vector_tokenize
         const char          *regex,           // the parsing regex (might be ignored)
         int                  regexlen,        //   length of the parsing regex
         const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how int a pipeline (== coeff_array col height)
+        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
         int                  pipe_iters,      //  how many rows are there in coeff_array
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)
@@ -431,11 +431,11 @@ int crm_vector_tokenize_selector
     classifier_flags = apb->sflags;
     featurebits = 32;
     hash_vec0 = osb1_coeff;
-    hash_len0 = OSB_BAYES_WINDOW_LEN /* 5 */;
-    hash_iters0 = WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */;
-    hash_vec1 = osb2_coeff;
-    hash_len1 = OSB_BAYES_WINDOW_LEN /* 5 */;
-    hash_iters1 = WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */;
+  hash_len0 = OSB_BAYES_WINDOW_LEN;    // was 5
+  hash_iters0 = WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
+  hash_vec1 = osb2_coeff;
+  hash_len1 = OSB_BAYES_WINDOW_LEN;     // was 5
+  hash_iters1 = WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
     output_stride = 1;
 
     //    put in the passed-in regex values, if any.
@@ -570,7 +570,7 @@ int crm_vector_tokenize_selector
                 if (local_pipe_len > UNIFIED_WINDOW_LEN)
                 {
                     nonfatalerror("You've specified a tokenizer pipe length "
-                                  "that is too int.", "  I'll trim it.");
+                                  "that is too long.", "  I'll trim it.");
                     local_pipe_len = UNIFIED_WINDOW_LEN;
                 }
                 //fprintf (stderr, "local_pipe_len = %d\n", local_pipe_len);
@@ -769,7 +769,7 @@ int crm_vector_osb1
             regexlen,
             osb1_coeff,
             OSB_BAYES_WINDOW_LEN,
-            WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */,
+      WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN,  // should be 4
             features,
             featureslen,
             2,
@@ -798,7 +798,7 @@ int crm_vector_osb2
             regexlen,
             osb2_coeff,
             OSB_BAYES_WINDOW_LEN,
-            WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */,
+      WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN,  // should be 4
             features,
             featureslen,
             2,

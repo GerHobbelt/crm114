@@ -156,6 +156,15 @@
 
 
 
+
+// define this only when you're porting this code to another platform (Win32) and need to
+// be DAMN sure the results are reproducable across the various platforms!
+#define DISABLE_RANDOM_NOISE_FOR_REPRO_CHECK 1
+
+
+
+
+
 #define HEADER_SIZE 1024
 
 #define STOCHASTIC
@@ -297,7 +306,11 @@ inline static float sign(float x)
 
 inline static double rand0to1()
 {
-    return (double)rand() / (double)RAND_MAX;
+#if defined(DISABLE_RANDOM_NOISE_FOR_REPRO_CHECK)
+	return 0.5;
+#else
+	return (double)rand() / (double)RAND_MAX;
+#endif
 }
 
 inline static double stochastic_factor(double stoch_noise,
@@ -328,8 +341,8 @@ static int retina_size = NN_RETINA_SIZE;
 static int first_layer_size = NN_FIRST_LAYER_SIZE;
 static int hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
 
+
 /*
- *
  * Another (as yet unimplemented) idea is to stripe the retina in a
  * pattern such that each neuron is "up against" every other neuron at
  * least once, but not as many times as the current "full crossbar"
@@ -340,7 +353,6 @@ static int hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
  * such as, on edges, faces, or hyperfaces, so that every graph node is
  * taken against every other node and hence every input at one level is
  * "against" every other input.  However, we haven't implemented this.
- *
  */
 
 
@@ -376,7 +388,7 @@ static int make_new_backing_file(const char *filename)
         if (first_layer_size < 4) first_layer_size = 4;
         hidden_layer_size = first_layer_size * 2;
         retina_size = first_layer_size * 1024;
-        if (retina_size < 1024) retina_size = 1024;
+        // if (retina_size < 1024) retina_size = 1024;  -- dead code: first_layer_size >= 4 anyway
     }
     if (internal_trace || user_trace)
     {
@@ -390,6 +402,7 @@ static int make_new_backing_file(const char *filename)
     h.retina_size = retina_size;
     h.first_layer_size = first_layer_size;
     h.hidden_layer_size = hidden_layer_size;
+  //    Write out the header fields
     if (1 != fwrite(&h, sizeof(NEURAL_NET_HEAD_STRUCT), 1, f))
     {
         fatalerror_ex(SRC_LOC(),
@@ -399,6 +412,7 @@ static int make_new_backing_file(const char *filename)
         return -1;
     }
 
+  //     Pad out the header space to header_size
     if (file_memset(f, 0, HEADER_SIZE - sizeof(NEURAL_NET_HEAD_STRUCT)))
     {
         fatalerror_ex(SRC_LOC(),
@@ -453,8 +467,8 @@ static int make_new_backing_file(const char *filename)
         }
         fprintf(stderr, "\n");
     }
-    ;
-    while (i--)
+
+	while (i--)
     {
         a = rand0to1() * NN_INITIALIZATION_NOISE_MAGNITUDE;
         if (1 != fwrite(&a, sizeof(a), 1, f))
@@ -540,7 +554,6 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
                      + h->first_layer_size * h->hidden_layer_size
                      + h->hidden_layer_size * 2;
 
-
     nn->docs_end = (crmhash_t *)((char *)h + filesize_on_disk);
     return 0;
 }
@@ -554,6 +567,19 @@ static void unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
     free(nn->delta_hidden_layer);
     crm_munmap_file(nn->file_origin);
 
+	nn->retina = NULL;
+    nn->first_layer = NULL;
+    nn->hidden_layer = NULL;
+    nn->delta_first_layer = NULL;
+    nn->delta_hidden_layer = NULL;
+    nn->file_origin = NULL;
+
+	nn->Win = NULL;
+    nn->Whid = NULL;
+    nn->Wout = NULL;
+    nn->docs_start = NULL;
+    nn->docs_end = NULL;
+ 
 #if 0  /* now touch-fixed inside the munmap call already! */
 #if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
@@ -728,8 +754,8 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
 
     if (internal_trace)
     {
-        fprintf(stderr, "First six items in the bag are: \n "
-                        "     %d %d %d %d %d %d\n",
+        fprintf(stderr, "First six items in the bag are:\n"
+                        "      %d %d %d %d %d %d\n",
             (int)bag[0], (int)bag[1], (int)bag[2], (int)bag[3], (int)bag[4], (int)bag[5]);
     }
 
@@ -917,7 +943,7 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     //     so we can change the threshold of level activation?
 
     //   Sort the features for speed in matching later - NO NEED ANY MORE
-    //  qsort(feature_space, n_features, sizeof(crmhash_t), compare_longs);
+    //  qsort(feature_space, n_features, sizeof(crmhash_t), compare_hash_vals);
 
     // anything that hashed to 0 or 1 needs to be promoted to 2 or 3, because
     //   0 and 1 are our "in-class" and "out-of-class" sentinels.  Also
@@ -941,8 +967,12 @@ static int eat_document(ARGPARSE_BLOCK *apb,
         //      do "two finger" uniquifying on the sorted result.
         i = 0;
         for (j = 0; j < n_features; j++)
+		{
             if (feature_space[j] != feature_space[j + 1])
-                feature_space[++i] = feature_space[j];
+			{
+				feature_space[++i] = feature_space[j];
+			}
+		}
         n_features = i;
     }
 
@@ -1008,10 +1038,10 @@ int crm_neural_net_learn
     int i, j;
     int n_features;
     int old_file_size;
-    crmhash_t *new_doc_start, *current_doc, *k, *l;
+    crmhash_t *current_doc, *k, *l;
     int found_duplicate;
     int n_docs, n_docs_trained, out_of_class, current_doc_len;
-    int n_cycles, filesize_on_disk, soft_cycle_limit;
+    int n_cycles, soft_cycle_limit;
 
     // FILE *f;
 
@@ -1149,10 +1179,14 @@ int crm_neural_net_learn
         {
             return -1;
         }
-        stat(filename, &statbuf);
+
+		stat(filename, &statbuf);
         if (internal_trace)
+		{
             fprintf(stderr, "Initial file size: %ld\n", (long int)statbuf.st_size);
+		}
     }
+
     //   The file now ought to exist.  Map it.
     i = map_file(nn, filename);
     if (i < 0)
@@ -1177,7 +1211,8 @@ int crm_neural_net_learn
          k < nn->docs_end
          && (k[0] = 0 || k[0] == 1)     //   Find a start-of-doc sentinel
          && k[2] != sum;                //  does the checksum match?
-         k++) ;
+         k++) 
+			 ;  // TBD: speed up by jumping over trains by using length in header k[0] ?
 
     if (k[2] == sum)
         found_duplicate = 1;
@@ -1213,20 +1248,39 @@ int crm_neural_net_learn
                 fprintf(stderr, "start %p length %d\n",
                     dest, len);
             }
-            for ( ; k < nn->docs_end; k++)
+			for ( ; k < nn->docs_end; k++)
             {
                 *dest = *k;
                 dest++;
             }
+
             //
             //    now unmap the file, msync it, unmap it, and truncate
             //    it.  Then remap it back in; viola- the bad data's gone.
             force_unmap_file(nn, filename);
-            truncate(filename, statbuf.st_size - len);
-            map_file(nn, filename);
+            
+			i = truncate(filename, statbuf.st_size - len);
+			if (i)
+			{
+				fatalerror_ex(SRC_LOC(), "Failed to truncate the Neural Net CSS 'learn' file '%s': error %d(%s)\n",
+                    filename,
+					errno,
+					errno_descr(errno));
+				return -1;
+			}
+            
+			i = map_file(nn, filename);
+			if (i < 0)
+			{
+				fatalerror("Could not create the neural net backing file ",
+					filename);
+				return -1;
+			}
             if (internal_trace)
+			{
                 fprintf(stderr, "Dealt with a duplicate at %p\n",
                     k);
+			}
         }
         else
         {
@@ -1234,10 +1288,16 @@ int crm_neural_net_learn
                 fprintf(stderr, "***Learning same file twice.  W.T.F. \n");
         }
         if (internal_trace)
+		{
             fprintf(stderr, "Dealt with a duplicate at %p\n",
                 k);
+		}
     }
 
+	//   [i_a] GROT GROT GROT a risky statement, though elegant in a way:
+	//         update the dafault NN file size setting for the remainder of
+	//         the run-time duration (OR when another NN CSS file was learned
+	//         as that would pass through here again).
     retina_size = nn->retina_size;
 
     //   then this data file has never been seen before so append it and remap
@@ -1276,29 +1336,23 @@ int crm_neural_net_learn
             }
             else
             {
-                int32_t val;
+                crmhash_t val;
                 int retv;
 
                 //     And make sure the file pointer is at EOF.
                 (void)fseek(f, 0, SEEK_END);
 
                 retv = 0;
-                if (ftell(f) == 0)
+                if (ftell(f) <= HEADER_SIZE)
                 {
-                    CRM_PORTA_HEADER_INFO classifier_info = { 0 };
-
-                    classifier_info.classifier_bits = CRM_NEURAL_NET;
-
-                    if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
-                    {
-                        nonfatalerror("Couldn't write the header to the .hypsvm file named ",
+					fatalerror("Neural Net CSS store seems to be corrupt. Filename: ",
                             filename);
                         fclose(f);
                         return -1;
-                    }
                 }
-                out_of_class = !!(apb->sflags & CRM_REFUTE);
-                if (out_of_class != 0) out_of_class = 1; // change bitpat to 1 bit
+
+                out_of_class = !!(apb->sflags & CRM_REFUTE);  // change bitpat to 1 bit
+                // if (out_of_class != 0) out_of_class = 1; // change bitpat to 1 bit
                 if (internal_trace)
                 {
                     fprintf(stderr, "Sense writing %d\n", out_of_class);
@@ -1312,15 +1366,59 @@ int crm_neural_net_learn
                 //   Offset 0 -  Write 0 or 1 (in-class or out-class)
 
                 val = out_of_class;
+				// [i_a] TBD: do this instead to provide a 'jump' offset to the next doc when scanning the CSS file lateron:
+				//            
+                // val = out_of_class | (n_features * sizeof(bag[0]) + 3 * sizeof(val));
+				//
+				// where
+				CRM_ASSERT(sizeof(bag[0]) == sizeof(val));
+				//
+				// The above works as a byte offset and can be used to jump to the next doc, by using it this way:
+				//
+				// check in/out class by looking at bit 0:
+				//
+				//   if ((k[0] & 0x01) is 0 or 1: in-class vs. out-class) do ...
+				//
+				// jump to start of next doc:
+				//
+				//   k += k[0] / sizeof(k[0]);
+				//
+				// computer-savvy people will of course rather use this instead:
+				//
+				//   k += k[0] >> log2 of sizeof(k[0]);
+				//
+				// but since that is not easily calculated at compile-time (though a nice macro comes to mind... :-) )
+				// you can also do this here and there, as it's only bit 0 we're interested in for checking.
+				//
+                //   val = out_of_class | ((n_features + 3) << 1);
+				//
+				//   if ((k[0] & 0x01) is 0 or 1: in-class vs. out-class) do ...
+				//
+				//   k += k[0] >> 1;
+				//
+				// will work guaranteed as the CSS file size cannot be larger than MAX_UINT bytes anyway or the complete
+				// system will barf on the mmap() - which will fail somewhere before that distant limit anyhow.
+				// And since we basically store the byte-offset to the next doc, but use the fact that bit0 will always
+				// be zero for such an offset (as long as the element size is a power of 2 >= 1 :-) )
+				//
+				//
+				// Savings? Several for-loops don't need to scan all elements, but can very quickly hop to the proper
+				// matching entry.
+				// Compared to the cost of the backprop in learn, dunno how much this will bring us, but at least it's
+				// an easy optimization anyhow.
+				//
+
                 retv += fwrite(&val, sizeof(val), 1, f);    //  in-class(0) or out-of-class(1)
 
                 //  Offset 1 - Write the number of passes without a
                 //  retrain on this one
                 i = 0;                                      //number of times we went without training this guy
+                val = i;
                 retv += fwrite(&val, sizeof(val), 1, f);    // number of times notrain
 
                 //  Offset 2 - Write the sum of the document feature hashes.
-                retv += fwrite(&sum, sizeof(sum), 1, f);    // hash of whole doc- for fastfind
+				val = sum;
+                retv += fwrite(&val, sizeof(val), 1, f);    // hash of whole doc- for fastfind
 
                 //       ALERT ALERT ALERT
                 //    CHANGED to save the bag, _not_ the projection!
@@ -1349,7 +1447,6 @@ int crm_neural_net_learn
         }
 
         stat(filename, &statbuf);
-        filesize_on_disk = statbuf.st_size;
         if (internal_trace)
             fprintf(stderr, "NN: statted filesize is now %ld.\n", (long int)statbuf.st_size);
 
@@ -1363,9 +1460,9 @@ int crm_neural_net_learn
         if (internal_trace)
             fprintf(stderr, "Neural network mapped at %p\n", nn);
 
-        CRM_ASSERT(old_file_size % sizeof(crmhash_t) == 0);
-        new_doc_start =
-            (crmhash_t *)((char *)(nn->file_origin) + old_file_size);
+        // CRM_ASSERT(old_file_size % sizeof(crmhash_t) == 0);        [i_a] will NOT work for VERSIONed CSS files
+        //new_doc_start =
+        //    (crmhash_t *)((char *)(nn->file_origin) + old_file_size);    --- unused code
 
         //    Print out a telltale to see if we're in the right place.
         if (internal_trace)
@@ -1389,7 +1486,7 @@ int crm_neural_net_learn
     }
     else
 	{
-        new_doc_start = k;
+        // new_doc_start = k;   [i_a] unused
 	}
 
     //    If we're in APPEND mode, we don't train yet.  So we're
@@ -1406,8 +1503,9 @@ int crm_neural_net_learn
 
     //   Are we going from the absolute start?
     if (apb->sflags & CRM_FROMSTART)
+	{
         nuke(nn, 0);
-
+	}
 
     //   Tally the number of example documents in this file
     n_docs = 0;
@@ -1415,6 +1513,7 @@ int crm_neural_net_learn
     {
         if (*k < 2)
             n_docs++;
+		// [i_a] TBD   speed up and improve by providing jump distance in k[0] ?
     }
 
     n_cycles = 0;
@@ -1600,7 +1699,9 @@ int crm_neural_net_learn
             {
                 k++;
                 current_doc_len++;
+				// [i_a] TBD   speed up and improve by providing jump distance in k[0] ? Be aware of the previous increments of k then; we're beyond the k[0]/k[1]/k[2] header here.
             }
+
             //    k now points to the next document
             if (internal_trace)
             {
@@ -1646,10 +1747,15 @@ int crm_neural_net_learn
 
             //    Do the error bounds comparison
             this_doc_was_wrong = 0;
-            if ((!out_of_class
-                 && ((eic0 < 0) || (eic1 < 0)))
-                || (out_of_class
-                 && ((eoc0 < 0) || (eoc1 < 0))))
+	  if(
+	     ( ! out_of_class &&
+	       (( eic0 < 0 ) || ( eic1 < 0 )) 
+	       )
+	     ||
+	     ( out_of_class && 
+	       (( eoc0 < 0 ) || (eoc1 < 0 ))
+	       )
+	     )
             {
                 n_docs_trained++;
                 this_doc_was_wrong = 1;
@@ -2084,15 +2190,26 @@ int crm_neural_net_learn
                 memmove(current_doc, k, sizeof(current_doc[0]) * (nn->docs_end - k));
                 nn->docs_end -= k - current_doc;
                 k = current_doc;
-                trunced = (int)(nn->docs_end - (crmhash_t *)nn->file_origin);
+	      trunced = sizeof(char)
+		* ( (char *)(nn->docs_end) - (char *)(nn->file_origin) );
                 n_docs--;
             }
         }
         if (trunced)
         {
             crm_force_munmap_filename(filename);
-            truncate(filename, trunced * sizeof(k[0]));
-            if (internal_trace)
+            
+			i = truncate(filename, trunced);
+			if (i)
+			{
+				fatalerror_ex(SRC_LOC(), "Failed to truncate the Neural Net CSS 'learn' file '%s' during microgroom: error %d(%s)\n",
+                    filename,
+					errno,
+					errno_descr(errno));
+				return -1;
+			}
+
+			if (internal_trace)
             {
                 fprintf(stderr, "\nleaving neural net learn after truncating"
                                 ", n_docs = %d\n", n_docs);
@@ -2201,7 +2318,7 @@ int crm_neural_net_classify(
         fprintf(stderr, "Diagnostic: fail_on = %d n_classifiers = %d\n",
             fail_on, n_classifiers);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "filenames[%d] = >%s<\n", i, filenames[i]);
+            fprintf(stderr, "filenames[%d] = '%s'\n", i, filenames[i]);
     }
 
     baglen = eat_document(apb, txtptr + txtstart, txtlen, &j,
@@ -2212,7 +2329,7 @@ int crm_neural_net_classify(
     {
         if (internal_trace)
         {
-            fprintf(stderr,  "Now running filenames[%d] = >%s<\n",
+            fprintf(stderr,  "Now running filenames[%d] = '%s'\n",
                 i, filenames[i]);
         }
         if (map_file(nn, filenames[i]))
@@ -2282,7 +2399,7 @@ int crm_neural_net_classify(
     suc_pR = get_pR(suc_p);
     out_pos = 0;
 
-    //test for nan as well
+    //test for nan as well ??? where
     if (suc_p > 0.5)
     {
         out_pos += sprintf(outbuf + out_pos,

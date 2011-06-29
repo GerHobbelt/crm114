@@ -1,5 +1,5 @@
 //  crm114_config.h  - Controllable Regex Mutilator base config, version X0.1
-//  Copyright 2001-2007 William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2008 William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -386,7 +386,7 @@
 //  How many times to allow a punt?
 #define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 10      
+#define NN_MICROGROOM_THRESHOLD 1000000      
 //  use the sparse retina design?  No, it's not good.
 #define NN_SPARSE_RETINA 0 
 

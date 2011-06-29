@@ -568,12 +568,29 @@ int is_crm_headered_file(FILE *f)
     if (!fseek(f, 0, SEEK_SET))
     {
         memset(sequence, 0, sizeof(sequence));
-        fread(sequence, sizeof(sequence[0]), WIDTHOF(sequence) - 1, f);
+        ret = fread(sequence, sizeof(sequence[0]), WIDTHOF(sequence) - 1, f);
         sequence[WIDTHOF(sequence) - 1] = 0;
 
-        ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, sequence, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
+		ret = is_crm_headered_mmapped_file(sequence, ret);
     }
     (void)fseek(f, old_pos, SEEK_SET);
+
+    return ret;
+}
+
+
+
+/*
+ * Return !0 if 'buf' points to a mmap()ed CRM file with portability header; return 0 otherwise.
+ */
+int is_crm_headered_mmapped_file(void *buf, size_t length)
+{
+	int ret = 0;
+
+    if (length > CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH)
+	{
+		ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, buf, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
+    }
 
     return ret;
 }

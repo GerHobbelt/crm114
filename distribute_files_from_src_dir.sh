@@ -193,5 +193,12 @@ check_file        examples        pad.dat
 
 
 
+check_file        docs            COLOPHON.txt
+check_file        docs            INTRO.txt
+check_file        docs            QUICKREF.txt
+check_file        docs            CRM114_Mailfilter_HOWTO.txt
+check_file        docs            knownbugs.txt
+check_file        docs            classify_details.txt
+
 
 

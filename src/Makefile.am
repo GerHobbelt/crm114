@@ -333,6 +333,8 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(TEXTFILES) 
 
 
+TESTS = megatest_ng
+
 
 
 bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok crm_test_hashes
