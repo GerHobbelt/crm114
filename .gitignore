@@ -32,9 +32,10 @@ stamp.year
 stamp.month
 stamp.day
 	   
-dist
-tmp-build
+crm114/dist
+crm114/tmp-build
+tmp
 
-autom4te.cache
+crm114/autom4te.cache
 
-win32/obj
+crm114/win32/obj
