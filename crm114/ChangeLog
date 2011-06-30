@@ -1,3 +1,8 @@
+2011-06-30 Ger Hobbelt
+
+    * Dropped support for MSVC2005
+	
+
 2009-02-22 Ger Hobbelt
 
     * Added the .spec file for by Jimmy Tang
