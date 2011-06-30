@@ -1,3 +1,6 @@
 [submodule "upskirt"]
 	path = upskirt
 	url = git@github.com:GerHobbelt/upskirt.git
+[submodule "libtre"]
+	path = libtre
+	url = git@github.com:GerHobbelt/libtre.git
