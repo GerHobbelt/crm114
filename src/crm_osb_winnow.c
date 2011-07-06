@@ -1,14 +1,19 @@
+//	crm_osb_winnow.c - OSB winnowing utilities
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+//
 //  crm_osb_winnow.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+
+
+
+
+
+// TODO: merge for real!
+
+
+
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 

@@ -1,5 +1,6 @@
- This is CRM114, version 20081111-BlameBarack (TRE 0.7.5 (LGPL))
- Copyright 2001-2006 William S. Yerazunis
+ This is CRM114, version 20100106-BlameMichelson (TRE 0.7.5 (LGPL))
+ Copyright 2001-2009 William S. Yerazunis
+
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
  CRM114 testing brackets, escapes and #'s 
@@ -22,15 +23,15 @@
 ./crm114: *ERROR* 
  For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
  Sorry, but this program is very sick and probably should be killed off.
-This happened at line 19 of file fataltraptest.crm
-(runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
+This happened at line 25 of file fataltraptest.crm
+(runtime system location: crm_expr_file_io.c(135) in routine: crm_expr_input)
   --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
  Caught the error  - fault text was 
 ./crm114: *ERROR* 
  For some reason, I was unable to write-open the file named /No/Such/Directory/frotz.mumble
  Sorry, but this program is very sick and probably should be killed off.
-This happened at line 29 of file fataltraptest.crm
-(runtime system location: crm_expr_file_io.c(345) in routine: crm_expr_output)
+This happened at line 35 of file fataltraptest.crm
+(runtime system location: crm_expr_file_io.c(329) in routine: crm_expr_output)
  
 
 Start of insert processor testing 
@@ -115,8 +116,8 @@ testing <absent> versus binding  (the '67' bug)
 ./crm114: *WARNING* 
  This program specifies an 'absent' match, and also tries to bind variables that, by the above, aren't matched!   We'll ignore these variable bindings for now.
 I'll try to keep working.
-This happened at line 292 of file matchtest.crm
-(runtime system location: crm_expr_match.c(479) in routine: crm_expr_match)
+This happened at line 298 of file matchtest.crm
+(runtime system location: crm_expr_match.c(413) in routine: crm_expr_match)
 
 
 ------------------END OF TESTING----------------------
@@ -189,7 +190,6 @@ tufts.edu
 dartmouth.edu
 mit.edu
 rpi.edu
-
 >>
 DEBUG: matched==<<CRM114>>
 DEBUG: matched==<<crm114>>
@@ -205,8 +205,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 20082 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 20082 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 20682 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 20682 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -217,7 +217,7 @@ union of l thru s is t2: 'l m n o p q r s'
 intersection of abc and t2 is t3: '' 
 union of zulu and t1 is t4: 'c d e f g h i j k l m n o p q r s t u v w x y z' 
 
- CRM114: test syscall 'echo beep' 
+ CRM114: test syscall 'printf beep' 
  
 
 CRM114: testing default command line args 
@@ -461,8 +461,8 @@ We should get an error here, due to the (intentional!) loop
 ./crm114: *WARNING* 
  The variable you're attempting to EVAL seems to eval infinitely, and hence I cannot compute it.  I did try a lot, though.  I got this far before I gave up:  :*:a:ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ(...truncated)
 I'll try to keep working.
-This happened at line 15 of file eval_infiniteloop.crm
-(runtime system location: crm_expr_alter.c(141) function crm_expr_eval)
+This happened at line 20 of file eval_infiniteloop.crm
+(runtime system location: crm_expr_alter.c(125) function crm_expr_eval)
 Original:    The quick brown fox jumped over the lazy dog's back
 delete file then append:     alpha bravo charlie 
 prior file, no append:    The quick brown fox jumped over the lazy dog's back
@@ -543,38 +543,38 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099032
-Bytes used per pass: 2097150
+OK_IF_SIZE_CHANGES: Size of isolation at start: 933509
+Bytes used per pass: 931467
 Passes done: 100 
-Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099049 
-OK_IF_LESS_THAN_100: Total growth: 17
+Total flux through isolation:  186293400
+OK_IF_SIZE_CHANGES: Final isolation size: 933525 
+OK_IF_LESS_THAN_100: Total growth: 16
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101514
-Bytes used per pass: 2097150
+OK_IF_SIZE_CHANGES: Size of isolation at start: 935934
+Bytes used per pass: 931467
 Passes done: 10 
-Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101529 
-OK_IF_LESS_THAN_10: Total growth: 15
-Bytes used per pass: 2097150
+Total flux through isolation:  18629340
+OK_IF_SIZE_CHANGES: Final isolation size: 935948 
+OK_IF_LESS_THAN_10: Total growth: 14
+Bytes used per pass: 931467
 Passes done: 20 
-Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101535 
-OK_IF_LESS_THAN_20: Total growth: 21
-Bytes used per pass: 2097150
+Total flux through isolation:  37258680
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
+OK_IF_LESS_THAN_20: Total growth: 19
+Bytes used per pass: 931467
 Passes done: 30 
-Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101536 
-OK_IF_LESS_THAN_30: Total growth: 22
-Bytes used per pass: 2097150
+Total flux through isolation:  55888020
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
+OK_IF_LESS_THAN_30: Total growth: 19
+Bytes used per pass: 931467
 Passes done: 40 
-Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101536 
-OK_IF_LESS_THAN_40: Total growth: 22
+Total flux through isolation:  74517360
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
+OK_IF_LESS_THAN_40: Total growth: 19
 Starting 
 
 
@@ -646,7 +646,7 @@ Returned status:
 DEAD MINION, EXIT CODE: 123
 And the data window is now: This is the original data window.  It shouldn't change
 
-TRANSLATE basic functionality test 
+TRANSLATE basic functionality test
 
 original: foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
 rot13:    sbb one mnccn 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX n-r
@@ -661,7 +661,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20081111-BlameBarack ( TRE 0.7.5 (LGPL) )
+version: 20100106-BlameMichelson ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -669,6 +669,13 @@ noSpaces after : AreTheRussianInvolved?
 withSpaces before: Nuclear Combat Toe To Toe With The Rooskies !
 withSpaces after : NuclearCombatToeToToeWithTheRooskies!
 
+
+#! /usr/bin/crm
+#
+#	quine.crm - produce program's own source code as output
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 
 {
  window
@@ -686,501 +693,583 @@ one two three
 result -->you hit the jackpot<--->and that's good<--->:frobotz:<--- 
 
  ****  Default (SBPH Markovian) classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -10.7044
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 10.7044  
-Total features in input file: 176
-#0 (i_test.css): features: 140946, hits: 693, prob: 1.98e-11, pR: -10.70 
-#1 (q_test.css): features: 135794, hits: 5038, prob: 1.00e+00, pR:  10.70 
+ type A 
+CLASSIFY fails; success probability: 0.0000  pR: -11.4360
+Best match to file #1 (a_test.css) prob: 1.0000  pR: 11.4360  
+Total features in input file: 192
+#0 (m_test.css): features: 63522, hits: 129, prob: 3.66e-12, pR: -11.44 
+#1 (a_test.css): features: 68546, hits: 4319, prob: 1.00e+00, pR:  11.44 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 10.2699
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 10.2699  
-Total features in input file: 160
-#0 (i_test.css): features: 140946, hits: 4571, prob: 1.00e+00, pR:  10.27 
-#1 (q_test.css): features: 135794, hits: 559, prob: 5.37e-11, pR: -10.27 
+ type M 
+CLASSIFY succeeds; success probability: 0.9875  pR: 1.8989
+Best match to file #0 (m_test.css) prob: 0.9875  pR: 1.8989  
+Total features in input file: 130
+#0 (m_test.css): features: 63522, hits: 749, prob: 9.88e-01, pR:   1.90 
+#1 (a_test.css): features: 68546, hits: 248, prob: 1.25e-02, pR:  -1.90 
 
 
 **** OSB Markovian classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0021  pR: -2.6669
-Best match to file #1 (q_test.css) prob: 0.9979  pR: 2.6669  
-Total features in input file: 44
-#0 (i_test.css): features: 35237, hits: 211, prob: 2.15e-03, pR:  -2.67 
-#1 (q_test.css): features: 33949, hits: 612, prob: 9.98e-01, pR:   2.67 
+ type A 
+CLASSIFY fails; success probability: 0.0007  pR: -3.1804
+Best match to file #1 (a_test.css) prob: 0.9993  pR: 3.1804  
+Total features in input file: 48
+#0 (m_test.css): features: 15881, hits: 7, prob: 6.60e-04, pR:  -3.18 
+#1 (a_test.css): features: 17137, hits: 488, prob: 9.99e-01, pR:   3.18 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9980  pR: 2.6952
-Best match to file #0 (i_test.css) prob: 0.9980  pR: 2.6952  
+ type M 
+CLASSIFY succeeds; success probability: 0.8832  pR: 0.8787
+Best match to file #0 (m_test.css) prob: 0.8832  pR: 0.8787  
 Total features in input file: 40
-#0 (i_test.css): features: 35237, hits: 601, prob: 9.98e-01, pR:   2.70 
-#1 (q_test.css): features: 33949, hits: 110, prob: 2.01e-03, pR:  -2.70 
+#0 (m_test.css): features: 15881, hits: 340, prob: 8.83e-01, pR:   0.88 
+#1 (a_test.css): features: 17137, hits: 8, prob: 1.17e-01, pR:  -0.88 
 
 
 **** OSB Markov Unique classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0021  pR: -2.6697
-Best match to file #1 (q_test.css) prob: 0.9979  pR: 2.6697  
-Total features in input file: 44
-#0 (i_test.css): features: 29641, hits: 67, prob: 2.13e-03, pR:  -2.67 
-#1 (q_test.css): features: 27911, hits: 450, prob: 9.98e-01, pR:   2.67 
+ type A 
+CLASSIFY fails; success probability: 0.0007  pR: -3.1365
+Best match to file #1 (a_test.css) prob: 0.9993  pR: 3.1365  
+Total features in input file: 48
+#0 (m_test.css): features: 15047, hits: 7, prob: 7.30e-04, pR:  -3.14 
+#1 (a_test.css): features: 14993, hits: 426, prob: 9.99e-01, pR:   3.14 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9971  pR: 2.5316
-Best match to file #0 (i_test.css) prob: 0.9971  pR: 2.5316  
+ type M 
+CLASSIFY succeeds; success probability: 0.8612  pR: 0.7928
+Best match to file #0 (m_test.css) prob: 0.8612  pR: 0.7928  
 Total features in input file: 40
-#0 (i_test.css): features: 29641, hits: 401, prob: 9.97e-01, pR:   2.53 
-#1 (q_test.css): features: 27911, hits: 86, prob: 2.93e-03, pR:  -2.53 
+#0 (m_test.css): features: 15047, hits: 112, prob: 8.61e-01, pR:   0.79 
+#1 (a_test.css): features: 14993, hits: 4, prob: 1.39e-01, pR:  -0.79 
 
 
 **** OSB Markov Chisquared Unique classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -5.7886
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 5.7886  
-Total features in input file: 44
-#0 (i_test.css): features: 29641, hits: 7, chi2: 2.24e+01, pR:  -5.79 
-#1 (q_test.css): features: 27911, hits: 34, chi2: 2.86e-02, pR:   5.79 
+ type A 
+CLASSIFY fails; success probability: 0.0000  pR: -6.0741
+Best match to file #1 (a_test.css) prob: 1.0000  pR: 6.0741  
+Total features in input file: 48
+#0 (m_test.css): features: 15047, hits: 1, chi2: 3.20e+01, pR:  -6.07 
+#1 (a_test.css): features: 14993, hits: 33, chi2: 2.94e-02, pR:   6.07 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 5.7255
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 5.7255  
+ type M 
+CLASSIFY succeeds; success probability: 0.8238  pR: 0.6700
+Best match to file #0 (m_test.css) prob: 0.8238  pR: 0.6700  
 Total features in input file: 40
-#0 (i_test.css): features: 29641, hits: 30, chi2: 3.23e-02, pR:   5.73 
-#1 (q_test.css): features: 27911, hits: 4, chi2: 2.35e+01, pR:  -5.73 
+#0 (m_test.css): features: 15047, hits: 9, chi2: 1.11e+01, pR:   0.67 
+#1 (a_test.css): features: 14993, hits: 1, chi2: 2.40e+01, pR:  -0.67 
 
 
 **** OSBF Local Confidence (Fidelis) classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0752  pR: -1.0897
-Best match to file #1 (q_test.css) prob: 0.9248  pR: 1.0897  
-Total features in input file: 44
-#0 (i_test.css): hits: 7, ufeats: 7, prob: 7.52e-02, pR:  -1.09 
-#1 (q_test.css): hits: 34, ufeats: 34, prob: 9.25e-01, pR:   1.09 
+ type A 
+CLASSIFY fails; success probability: 0.0538  pR: -1.2453
+Best match to file #1 (a_test.css) prob: 0.9462  pR: 1.2453  
+Total features in input file: 48
+#0 (m_test.css): hits: 1, ufeats: 1, prob: 5.38e-02, pR:  -1.25 
+#1 (a_test.css): hits: 33, ufeats: 33, prob: 9.46e-01, pR:   1.25 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9067  pR: 0.9875
-Best match to file #0 (i_test.css) prob: 0.9067  pR: 0.9875  
+ type M 
+CLASSIFY succeeds; success probability: 0.6823  pR: 0.3319
+Best match to file #0 (m_test.css) prob: 0.6823  pR: 0.3319  
 Total features in input file: 40
-#0 (i_test.css): hits: 30, ufeats: 30, prob: 9.07e-01, pR:   0.99 
-#1 (q_test.css): hits: 4, ufeats: 4, prob: 9.33e-02, pR:  -0.99 
+#0 (m_test.css): hits: 9, ufeats: 9, prob: 6.82e-01, pR:   0.33 
+#1 (a_test.css): hits: 1, ufeats: 1, prob: 3.18e-01, pR:  -0.33 
 
  
 **** OSB Winnow classifier 
- type Q 
-CLASSIFY fails; success probability: 0.4401  pR: -1.0456
-Best match to file #1 (q_test.css) weight: 50.4736  pR: 1.3486  
-Total features in input file: 44
-#0 (i_test.css): features: 57264.78, unseen: 7.00e+00, weight: 3.97e+01, pR:   0.30 
-#1 (q_test.css): features: 56572.78, unseen: 7.00e+00, weight: 5.05e+01, pR:   1.35 
+ type A 
+CLASSIFY fails; success probability: 0.4347  pR: -1.1415
+Best match to file #1 (a_test.css) weight: 55.3809  pR: 2.2485  
+Total features in input file: 48
+#0 (m_test.css): features: 30529.10, unseen: 1.50e+01, weight: 4.26e+01, pR:   1.11 
+#1 (a_test.css): features: 30507.50, unseen: 1.50e+01, weight: 5.54e+01, pR:   2.25 
 
- type I 
-CLASSIFY succeeds; success probability: 0.5636  pR: 1.1113
-Best match to file #0 (i_test.css) weight: 46.0636  pR: 1.8624  
+ type M 
+CLASSIFY succeeds; success probability: 0.5199  pR: 0.3454
+Best match to file #0 (m_test.css) weight: 41.8609  pR: 6.6757  
 Total features in input file: 40
-#0 (i_test.css): features: 57264.78, unseen: 1.00e+01, weight: 4.61e+01, pR:   1.86 
-#1 (q_test.css): features: 56572.78, unseen: 1.00e+01, weight: 3.57e+01, pR:   0.75 
+#0 (m_test.css): features: 30529.10, unseen: 3.10e+01, weight: 4.19e+01, pR:   6.68 
+#1 (a_test.css): features: 30507.50, unseen: 3.10e+01, weight: 3.87e+01, pR:   6.33 
 
 
 
-**** Now verify that winnow learns affect only the named file (i_test.css)
- type I 
-CLASSIFY succeeds; success probability: 0.5636  pR: 1.1113
-Best match to file #0 (i_test.css) weight: 46.0636  pR: 1.8624  
+**** Now verify that winnow learns affect only the named file (m_test.css)
+ type M 
+CLASSIFY succeeds; success probability: 0.5213  pR: 0.3697
+Best match to file #0 (m_test.css) weight: 42.0957  pR: 6.7000  
 Total features in input file: 40
-#0 (i_test.css): features: 58822.04, unseen: 1.00e+01, weight: 4.61e+01, pR:   1.86 
-#1 (q_test.css): features: 56572.78, unseen: 1.00e+01, weight: 3.57e+01, pR:   0.75 
+#0 (m_test.css): features: 47122.80, unseen: 3.10e+01, weight: 4.21e+01, pR:   6.70 
+#1 (a_test.css): features: 30507.50, unseen: 3.10e+01, weight: 3.87e+01, pR:   6.33 
 
 
 
- and now refute-learn into q_test.css
- type I 
-CLASSIFY succeeds; success probability: 0.5658  pR: 1.1498
-Best match to file #0 (i_test.css) weight: 46.0636  pR: 1.8624  
+ and now refute-learn into a_test.css
+ type M 
+CLASSIFY succeeds; success probability: 0.5224  pR: 0.3892
+Best match to file #0 (m_test.css) weight: 42.0957  pR: 6.7000  
 Total features in input file: 40
-#0 (i_test.css): features: 58822.04, unseen: 1.00e+01, weight: 4.61e+01, pR:   1.86 
-#1 (q_test.css): features: 70333.47, unseen: 1.00e+01, weight: 3.53e+01, pR:   0.71 
+#0 (m_test.css): features: 47122.80, unseen: 3.10e+01, weight: 4.21e+01, pR:   6.70 
+#1 (a_test.css): features: 42181.02, unseen: 3.10e+01, weight: 3.85e+01, pR:   6.31 
 
 
 **** Unigram Bayesian classifier 
- type Q 
-CLASSIFY fails; success probability: 0.4146  pR: -0.1498
-Best match to file #1 (q_test.css) prob: 0.5854  pR: 0.1498  
-Total features in input file: 11
-#0 (i_test.css): features: 8811, hits: 529, prob: 4.15e-01, pR:  -0.15 
-#1 (q_test.css): features: 8489, hits: 486, prob: 5.85e-01, pR:   0.15 
+ type A 
+CLASSIFY fails; success probability: 0.1570  pR: -0.7300
+Best match to file #1 (a_test.css) prob: 0.8430  pR: 0.7300  
+Total features in input file: 12
+#0 (m_test.css): features: 3972, hits: 125, prob: 1.57e-01, pR:  -0.73 
+#1 (a_test.css): features: 4286, hits: 283, prob: 8.43e-01, pR:   0.73 
 
- type I 
-CLASSIFY succeeds; success probability: 0.7123  pR: 0.3937
-Best match to file #0 (i_test.css) prob: 0.7123  pR: 0.3937  
+ type M 
+CLASSIFY succeeds; success probability: 0.7226  pR: 0.4157
+Best match to file #0 (m_test.css) prob: 0.7226  pR: 0.4157  
 Total features in input file: 10
-#0 (i_test.css): features: 8811, hits: 635, prob: 7.12e-01, pR:   0.39 
-#1 (q_test.css): features: 8489, hits: 539, prob: 2.88e-01, pR:  -0.39 
+#0 (m_test.css): features: 3972, hits: 205, prob: 7.23e-01, pR:   0.42 
+#1 (a_test.css): features: 4286, hits: 240, prob: 2.77e-01, pR:  -0.42 
 
  
 **** unigram Winnow classifier 
- type Q 
-CLASSIFY fails; success probability: 0.4734  pR: -0.4634
-Best match to file #1 (q_test.css) weight: 11.8572  pR: 0.3259  
-Total features in input file: 11
-#0 (i_test.css): features: 4515.52, unseen: 0.00e+00, weight: 1.07e+01, pR:  -0.14 
-#1 (q_test.css): features: 4522.72, unseen: 0.00e+00, weight: 1.19e+01, pR:   0.33 
+ type A 
+CLASSIFY fails; success probability: 0.4432  pR: -0.9918
+Best match to file #1 (a_test.css) weight: 13.7145  pR: 0.5800  
+Total features in input file: 12
+#0 (m_test.css): features: 3056.52, unseen: 0.00e+00, weight: 1.09e+01, pR:  -0.41 
+#1 (a_test.css): features: 2901.72, unseen: 0.00e+00, weight: 1.37e+01, pR:   0.58 
 
- type I 
-CLASSIFY succeeds; success probability: 0.5293  pR: 0.5097
-Best match to file #0 (i_test.css) weight: 10.8363  pR: 0.3488  
-Total features in input file: 10
-#0 (i_test.css): features: 4515.52, unseen: 0.00e+00, weight: 1.08e+01, pR:   0.35 
-#1 (q_test.css): features: 4522.72, unseen: 0.00e+00, weight: 9.64e+00, pR:  -0.16 
+ type M 
+CLASSIFY succeeds; success probability: 0.5652  pR: 1.1393
+Best match to file #0 (m_test.css) weight: 10.4009  pR: 1.7197  
+Total features in input file: 9
+#0 (m_test.css): features: 3056.52, unseen: 2.00e+00, weight: 1.04e+01, pR:   1.72 
+#1 (a_test.css): features: 2901.72, unseen: 2.00e+00, weight: 8.00e+00, pR:   0.58 
 
 
 **** OSB Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0320  pR: -14.8090
-Best match to file #1 (q_test.css) prob: 0.9680  pR: 14.8090  
-Total features in input file: 43
-#0 (i_test.css): features: 29642, hits: 6, radiance: 1.21e-03, prob: 3.20e-02, pR: -14.81 
-#1 (q_test.css): features: 27912, hits: 32, radiance: 3.67e-02, prob: 9.68e-01, pR:  14.81 
+ type A 
+CLASSIFY fails; success probability: 0.0010  pR: -30.1365
+Best match to file #1 (a_test.css) prob: 0.9990  pR: 30.1365  
+Total features in input file: 47
+#0 (m_test.css): features: 15048, hits: 1, radiance: 6.63e-05, prob: 9.68e-04, pR: -30.14 
+#1 (a_test.css): features: 14994, hits: 32, radiance: 6.84e-02, prob: 9.99e-01, pR:  30.14 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9802  pR: 16.9532
-Best match to file #0 (i_test.css) prob: 0.9802  pR: 16.9532  
+ type M 
+CLASSIFY succeeds; success probability: 1.0000  pR: 216.2810
+Best match to file #0 (m_test.css) prob: 1.0000  pR: 216.2810  
 Total features in input file: 39
-#0 (i_test.css): features: 29642, hits: 29, radiance: 2.84e-02, prob: 9.80e-01, pR:  16.95 
-#1 (q_test.css): features: 27912, hits: 4, radiance: 5.73e-04, prob: 1.98e-02, pR: -16.95 
+#0 (m_test.css): features: 15048, hits: 8, radiance: 4.25e-03, prob: 1.00e+00, pR: 216.28 
+#1 (a_test.css): features: 14994, hits: 0, radiance: 0.00e+00, prob: 2.35e-22, pR: -216.28 
 
 
 **** OSB three-letter Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.1876  pR: -6.3646
-Best match to file #1 (q_test.css) prob: 0.8124  pR: 6.3646  
-Total features in input file: 91
-#0 (i_test.css): features: 60826, hits: 9, radiance: 1.33e-03, prob: 1.88e-01, pR:  -6.36 
-#1 (q_test.css): features: 62633, hits: 19, radiance: 5.76e-03, prob: 8.12e-01, pR:   6.36 
+ type A 
+CLASSIFY fails; success probability: 0.1947  pR: -6.1669
+Best match to file #1 (a_test.css) prob: 0.8053  pR: 6.1669  
+Total features in input file: 11
+#0 (m_test.css): features: 4348, hits: 5, radiance: 5.75e-03, prob: 1.95e-01, pR:  -6.17 
+#1 (a_test.css): features: 4214, hits: 10, radiance: 2.38e-02, prob: 8.05e-01, pR:   6.17 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9718  pR: 15.3684
-Best match to file #0 (i_test.css) prob: 0.9718  pR: 15.3684  
-Total features in input file: 67
-#0 (i_test.css): features: 60826, hits: 52, radiance: 4.45e-02, prob: 9.72e-01, pR:  15.37 
-#1 (q_test.css): features: 62633, hits: 9, radiance: 1.29e-03, prob: 2.82e-02, pR: -15.37 
+ type M 
+CLASSIFY succeeds; success probability: 0.6695  pR: 3.0659
+Best match to file #0 (m_test.css) prob: 0.6695  pR: 3.0659  
+Total features in input file: 14
+#0 (m_test.css): features: 4348, hits: 13, radiance: 3.90e-02, prob: 6.70e-01, pR:   3.07 
+#1 (a_test.css): features: 4214, hits: 9, radiance: 1.92e-02, prob: 3.30e-01, pR:  -3.07 
 
 
 **** Unigram Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.3087  pR: -3.5019
-Best match to file #1 (q_test.css) prob: 0.6913  pR: 3.5019  
-Total features in input file: 10
-#0 (i_test.css): features: 2615, hits: 6, radiance: 1.38e-02, prob: 3.09e-01, pR:  -3.50 
-#1 (q_test.css): features: 2633, hits: 9, radiance: 3.09e-02, prob: 6.91e-01, pR:   3.50 
+ type A 
+CLASSIFY fails; success probability: 0.1628  pR: -7.1107
+Best match to file #1 (a_test.css) prob: 0.8372  pR: 7.1107  
+Total features in input file: 11
+#0 (m_test.css): features: 1794, hits: 5, radiance: 1.39e-02, prob: 1.63e-01, pR:  -7.11 
+#1 (a_test.css): features: 1406, hits: 10, radiance: 7.17e-02, prob: 8.37e-01, pR:   7.11 
 
- type I 
-CLASSIFY succeeds; success probability: 0.6419  pR: 2.5353
-Best match to file #0 (i_test.css) prob: 0.6419  pR: 2.5353  
+ type M 
+CLASSIFY succeeds; success probability: 0.9660  pR: 14.5322
+Best match to file #0 (m_test.css) prob: 0.9660  pR: 14.5322  
 Total features in input file: 9
-#0 (i_test.css): features: 2615, hits: 8, radiance: 2.46e-02, prob: 6.42e-01, pR:   2.54 
-#1 (q_test.css): features: 2633, hits: 6, radiance: 1.37e-02, prob: 3.58e-01, pR:  -2.54 
+#0 (m_test.css): features: 1794, hits: 6, radiance: 2.01e-02, prob: 9.66e-01, pR:  14.53 
+#1 (a_test.css): features: 1406, hits: 1, radiance: 7.09e-04, prob: 3.40e-02, pR: -14.53 
 
 
 **** String Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -216.2770
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 216.2770  
-Total features in input file: 10
-#0 (i_test.css): features: 8810, hits: 0, radiance: 0.00e+00, prob: 2.36e-22, pR: -216.28 
-#1 (q_test.css): features: 8488, hits: 6, radiance: 4.24e-03, prob: 1.00e+00, pR: 216.28 
+ type A 
+CLASSIFY fails; success probability: 0.0955  pR: -9.7666
+Best match to file #1 (a_test.css) prob: 0.9045  pR: 9.7666  
+Total features in input file: 61
+#0 (m_test.css): features: 22670, hits: 17, radiance: 1.27e-02, prob: 9.55e-02, pR:  -9.77 
+#1 (a_test.css): features: 22452, hits: 52, radiance: 1.21e-01, prob: 9.05e-01, pR:   9.77 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 214.5311
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 214.5311  
-Total features in input file: 9
-#0 (i_test.css): features: 8810, hits: 5, radiance: 2.84e-03, prob: 1.00e+00, pR: 214.53 
-#1 (q_test.css): features: 8488, hits: 0, radiance: 0.00e+00, prob: 3.52e-22, pR: -214.53 
+ type M 
+CLASSIFY succeeds; success probability: 0.8340  pR: 7.0113
+Best match to file #0 (m_test.css) prob: 0.8340  pR: 7.0113  
+Total features in input file: 72
+#0 (m_test.css): features: 22670, hits: 45, radiance: 8.94e-02, prob: 8.34e-01, pR:   7.01 
+#1 (a_test.css): features: 22452, hits: 20, radiance: 1.78e-02, prob: 1.66e-01, pR:  -7.01 
 
 
 **** String Unigram Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.2997  pR: -3.6867
-Best match to file #1 (q_test.css) prob: 0.7003  pR: 3.6867  
-Total features in input file: 10
-#0 (i_test.css): features: 8810, hits: 6, radiance: 4.09e-03, prob: 3.00e-01, pR:  -3.69 
-#1 (q_test.css): features: 8488, hits: 9, radiance: 9.55e-03, prob: 7.00e-01, pR:   3.69 
+ type A 
+CLASSIFY fails; success probability: 0.2121  pR: -5.7002
+Best match to file #1 (a_test.css) prob: 0.7879  pR: 5.7002  
+Total features in input file: 11
+#0 (m_test.css): features: 3971, hits: 5, radiance: 6.30e-03, prob: 2.12e-01, pR:  -5.70 
+#1 (a_test.css): features: 4285, hits: 10, radiance: 2.34e-02, prob: 7.88e-01, pR:   5.70 
 
- type I 
-CLASSIFY succeeds; success probability: 0.6315  pR: 2.3389
-Best match to file #0 (i_test.css) prob: 0.6315  pR: 2.3389  
+ type M 
+CLASSIFY succeeds; success probability: 0.9750  pR: 15.9041
+Best match to file #0 (m_test.css) prob: 0.9750  pR: 15.9041  
 Total features in input file: 9
-#0 (i_test.css): features: 8810, hits: 8, radiance: 7.27e-03, prob: 6.31e-01, pR:   2.34 
-#1 (q_test.css): features: 8488, hits: 6, radiance: 4.24e-03, prob: 3.69e-01, pR:  -2.34 
+#0 (m_test.css): features: 3971, hits: 6, radiance: 9.08e-03, prob: 9.75e-01, pR:  15.90 
+#1 (a_test.css): features: 4285, hits: 1, radiance: 2.33e-04, prob: 2.50e-02, pR: -15.90 
 
 
 **** Vector 3-word-bag Hyperspace classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -217.6170
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 217.6170  
-Total features in input file: 10
-#0 (i_test.css): features: 8810, hits: 0, radiance: 0.00e+00, prob: 1.73e-22, pR: -217.62 
-#1 (q_test.css): features: 8488, hits: 7, radiance: 5.78e-03, prob: 1.00e+00, pR: 217.62 
+ type A 
+CLASSIFY fails; success probability: 0.0000  pR: -220.5875
+Best match to file #1 (a_test.css) prob: 1.0000  pR: 220.5875  
+Total features in input file: 11
+#0 (m_test.css): features: 3971, hits: 0, radiance: 0.00e+00, prob: 8.73e-23, pR: -220.59 
+#1 (a_test.css): features: 4285, hits: 7, radiance: 1.14e-02, prob: 1.00e+00, pR: 220.59 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 217.4557
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 217.4557  
+ type M 
+CLASSIFY succeeds; success probability: 1.0000  pR: 204.0055
+Best match to file #0 (m_test.css) prob: 1.0000  pR: 204.0055  
 Total features in input file: 9
-#0 (i_test.css): features: 8810, hits: 7, radiance: 5.57e-03, prob: 1.00e+00, pR: 217.46 
-#1 (q_test.css): features: 8488, hits: 0, radiance: 0.00e+00, prob: 1.80e-22, pR: -217.46 
+#0 (m_test.css): features: 3971, hits: 1, radiance: 2.52e-04, prob: 1.00e+00, pR: 204.01 
+#1 (a_test.css): features: 4285, hits: 0, radiance: 0.00e+00, prob: 3.98e-21, pR: -204.01 
 
 
 **** Bit-Entropy classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -5.8950
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 5.8950  
-Total features in input file: 552
-#0 (i_test.css): features: 425488 (5%), entropy: 365.245109, jumps: 21, prob: 1.27e-06, pR:  -5.90 
-#1 (q_test.css): features: 563328 (5%), entropy: 222.828098, jumps: 7, prob: 1.00e+00, pR:   5.90 
+ type A 
+CLASSIFY fails; success probability: 0.0000  pR: -12.0014
+Best match to file #1 (a_test.css) prob: 1.0000  pR: 12.0014  
+Total features in input file: 496
+#0 (m_test.css): features: 181352 (3%), entropy: 434.778519, jumps: 31, prob: 9.97e-13, pR: -12.00 
+#1 (a_test.css): features: 179608 (3%), entropy: 144.839378, jumps: 5, prob: 1.00e+00, pR:  12.00 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 4.8632
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8632  
-Total features in input file: 408
-#0 (i_test.css): features: 425488 (5%), entropy: 138.295562, jumps: 4, prob: 1.00e+00, pR:   4.86 
-#1 (q_test.css): features: 563328 (5%), entropy: 255.785638, jumps: 16, prob: 1.37e-05, pR:  -4.86 
+ type M 
+CLASSIFY succeeds; success probability: 1.0000  pR: 6.3285
+Best match to file #0 (m_test.css) prob: 1.0000  pR: 6.3285  
+Total features in input file: 584
+#0 (m_test.css): features: 181352 (3%), entropy: 385.057958, jumps: 29, prob: 1.00e+00, pR:   6.33 
+#1 (a_test.css): features: 179608 (3%), entropy: 537.946666, jumps: 39, prob: 4.69e-07, pR:  -6.33 
 
 
 **** Bit-Entropy Toroid classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -9.5657
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 9.5657  
-Total features in input file: 552
-#0 (i_test.css): features: 425488 (100%), entropy: 519.417386, jumps: 33, prob: 2.72e-10, pR:  -9.57 
-#1 (q_test.css): features: 563328 (100%), entropy: 288.321997, jumps: 8, prob: 1.00e+00, pR:   9.57 
+ type A 
+CLASSIFY fails; success probability: 0.0000  pR: -7.5206
+Best match to file #1 (a_test.css) prob: 1.0000  pR: 7.5206  
+Total features in input file: 496
+#0 (m_test.css): features: 181352 (100%), entropy: 464.920710, jumps: 33, prob: 3.02e-08, pR:  -7.52 
+#1 (a_test.css): features: 179608 (100%), entropy: 283.231656, jumps: 13, prob: 1.00e+00, pR:   7.52 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 8.3545
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 8.3545  
-Total features in input file: 408
-#0 (i_test.css): features: 425488 (100%), entropy: 231.058285, jumps: 7, prob: 1.00e+00, pR:   8.35 
-#1 (q_test.css): features: 563328 (100%), entropy: 432.894098, jumps: 28, prob: 4.42e-09, pR:  -8.35 
+ type M 
+CLASSIFY succeeds; success probability: 1.0000  pR: 5.1811
+Best match to file #0 (m_test.css) prob: 1.0000  pR: 5.1811  
+Total features in input file: 584
+#0 (m_test.css): features: 181352 (100%), entropy: 550.166118, jumps: 41, prob: 1.00e+00, pR:   5.18 
+#1 (a_test.css): features: 179608 (100%), entropy: 675.335081, jumps: 53, prob: 6.59e-06, pR:  -5.18 
 
 
 **** Fast Substring Compression Match Classifier 
- type Q 
-CLASSIFY fails; success probability: 0.2977  pR: -74.5561
-Best match to file #1 (q_test.css) prob: 0.7023  pR: 74.5561 
-Best match to file #1 (q_test.css) prob: 0.7023  pR: 74.5561 
-#0 (i_test.css): features: 53190, chcs: 128.73, prob: 2.98e-01, pR: -74.56 
-#1 (q_test.css): features: 70420, chcs: 303.70, prob: 7.02e-01, pR:  74.56 
+ type A 
+CLASSIFY fails; success probability: 0.1272  pR: -167.2656
+Best match to file #1 (a_test.css) prob: 0.8728  pR: 167.2656 
+Total features in input file: 62
+#0 (m_test.css): features: 22673, chcs:  30.40, prob: 1.27e-01, pR: -167.27 
+#1 (a_test.css): features: 22455, chcs: 208.52, prob: 8.73e-01, pR: 167.27 
 
- type I 
-CLASSIFY succeeds; success probability: 0.6422  pR: 50.8091
-Best match to file #0 (i_test.css) prob: 0.6422  pR: 50.8091 
-Best match to file #0 (i_test.css) prob: 0.6422  pR: 50.8091 
-#0 (i_test.css): features: 53190, chcs: 184.38, prob: 6.42e-01, pR:  50.81 
-#1 (q_test.css): features: 70420, chcs: 102.72, prob: 3.58e-01, pR: -50.81 
+ type M 
+CLASSIFY succeeds; success probability: 0.7143  pR: 79.5911
+Best match to file #0 (m_test.css) prob: 0.7143  pR: 79.5911 
+Total features in input file: 73
+#0 (m_test.css): features: 22673, chcs: 138.32, prob: 7.14e-01, pR:  79.59 
+#1 (a_test.css): features: 22455, chcs:  55.33, prob: 2.86e-01, pR: -79.59 
 
 
 **** Neural Network Classifier 
- type Q 
-CLASSIFY fails; success probability: 0.108325  pR: -84.5425
-Best match to file #1 (q_test.css) prob: 0.8917  pR: 89.0136  
-Total features in input file: 268
-#0 (i_test.css): feats: 69190 ic: 0.13 oc: 0.90 prob: 1.08e-01, pR: -79.80
-#1 (q_test.css): feats: 69190 ic: 0.94 oc: 0.05 prob: 8.92e-01, pR:  89.01
+ type A 
+CLASSIFY fails; success probability: 0.495362  pR: -1.7894
+Best match to file #1 (a_test.css) prob: 0.5046  pR: 95.1750  
+Total features in input file: 220
+#0 (m_test.css): feats: 33029 ic: 0.95 oc: 0.04 prob: 4.95e-01, pR:  90.08
+#1 (a_test.css): feats: 33029 ic: 0.98 oc: 0.03 prob: 5.05e-01, pR:  95.17
 
- type Q 
-CLASSIFY fails; success probability: 0.487286  pR: -0.7572
-Best match to file #1 (q_test.css) prob: 0.5127  pR: -66.3557  
-Total features in input file: 372
-#0 (i_test.css): feats: 69190 ic: 0.16 oc: 0.87 prob: 4.87e-01, pR: -72.93
-#1 (q_test.css): feats: 69190 ic: 0.13 oc: 0.83 prob: 5.13e-01, pR: -66.36
+ type A 
+CLASSIFY fails; success probability: 0.448415  pR: -17.9280
+Best match to file #1 (a_test.css) prob: 0.5516  pR: 93.7239  
+Total features in input file: 188
+#0 (m_test.css): feats: 33029 ic: 0.77 oc: 0.20 prob: 4.48e-01, pR:  55.70
+#1 (a_test.css): feats: 33029 ic: 0.97 oc: 0.04 prob: 5.52e-01, pR:  93.72
 
- Alternating Example Neural Network Classifier TRAINING 
+**** Alternating Example Neural Network Classifier TRAINING
 
 **** Alternating Example Neural Network Classifier RUNNING TEST
- type Q 
-CLASSIFY fails; success probability: 0.019227  pR: -91.4123
-Best match to file #1 (q_test.css) prob: 0.9808  pR: 86.4627  
-Total features in input file: 172
-#0 (i_test.css): feats: 8952 ic: 0.02 oc: 0.98 prob: 1.92e-02, pR: -96.39
-#1 (q_test.css): feats: 8952 ic: 0.93 oc: 0.06 prob: 9.81e-01, pR:  86.46
+ type A 
+CLASSIFY fails; success probability: 0.093212  pR: -81.8632
+Best match to file #1 (a_test.css) prob: 0.9068  pR: 83.5828  
+Total features in input file: 220
+#0 (m_test.css): feats: 5826 ic: 0.09 oc: 0.90 prob: 9.32e-02, pR: -80.16
+#1 (a_test.css): feats: 5826 ic: 0.92 oc: 0.09 prob: 9.07e-01, pR:  83.58
 
- type I 
-CLASSIFY succeeds; success probability: 0.920054  pR: 83.3504
-Best match to file #0 (i_test.css) prob: 0.9201  pR: 83.8780  
-Total features in input file: 168
-#0 (i_test.css): feats: 8952 ic: 0.92 oc: 0.08 prob: 9.20e-01, pR:  83.88
-#1 (q_test.css): feats: 8952 ic: 0.07 oc: 0.91 prob: 7.99e-02, pR: -82.82
+ type M 
+CLASSIFY succeeds; success probability: 0.671733  pR: 39.6054
+Best match to file #0 (m_test.css) prob: 0.6717  pR: 51.5804  
+Total features in input file: 175
+#0 (m_test.css): feats: 5826 ic: 0.76 oc: 0.26 prob: 6.72e-01, pR:  51.58
+#1 (a_test.css): feats: 5826 ic: 0.39 oc: 0.65 prob: 3.28e-01, pR: -27.42
 
 
 **** Support Vector Machine (SVM) unigram classifier 
- type I 
-CLASSIFY succeeds; success probability: 0.8653  pR: 8.0792
-Best match to file #0 (i_test.css) prob: 0.8653  pR: 8.0792  
-Total features in input file: 11
-#0 (i_test.css): documents: 300, features: 7464,  prob: 8.65e-01, pR:   8.08 
-#1 (q_test.css): documents: 176, features: 6291,  prob: 1.35e-01, pR:  -8.08 
+ type M 
+CLASSIFY succeeds success probability: 0.688203 pR: 1.5838
+Best match to class #0 prob: 0.6882 pR: 1.5838   
+Total features in input file: 12
+#0 (label +1): documents: 193, features: 3567, prob: 6.88e-01, pR:   1.58
+#1 (label -1): documents: 57, features: 3174, prob: 3.12e-01, pR:  -1.58
 
- type I 
-CLASSIFY succeeds; success probability: 0.9941  pR: 22.2617
-Best match to file #0 (i_test.css) prob: 0.9941  pR: 22.2617  
-Total features in input file: 10
-#0 (i_test.css): documents: 300, features: 7464,  prob: 9.94e-01, pR:  22.26 
-#1 (q_test.css): documents: 176, features: 6291,  prob: 5.91e-03, pR: -22.26 
+ type M 
+CLASSIFY succeeds success probability: 0.855189 pR: 7.4081
+Best match to class #0 prob: 0.8552 pR: 7.4081   
+Total features in input file: 9
+#0 (label +1): documents: 193, features: 3567, prob: 8.55e-01, pR:   7.41
+#1 (label -1): documents: 57, features: 3174, prob: 1.45e-01, pR:  -7.41
 
 
 **** Support Vector Machine (SVM) classifier 
- type I 
-CLASSIFY succeeds; success probability: 0.8434  pR: 7.3130
-Best match to file #0 (i_test.css) prob: 0.8434  pR: 7.3130  
-Total features in input file: 44
-#0 (i_test.css): documents: 300, features: 34780,  prob: 8.43e-01, pR:   7.31 
-#1 (q_test.css): documents: 176, features: 32821,  prob: 1.57e-01, pR:  -7.31 
+ type M 
+CLASSIFY succeeds success probability: 0.677904 pR: 1.4405
+Best match to class #0 prob: 0.6779 pR: 1.4405   
+Total features in input file: 48
+#0 (label +1): documents: 193, features: 15809, prob: 6.78e-01, pR:   1.44
+#1 (label -1): documents: 57, features: 16604, prob: 3.22e-01, pR:  -1.44
 
- type I 
-CLASSIFY succeeds; success probability: 0.9605  pR: 13.8574
-Best match to file #0 (i_test.css) prob: 0.9605  pR: 13.8574  
+ type M 
+CLASSIFY succeeds success probability: 0.801854 pR: 4.3443
+Best match to class #0 prob: 0.8019 pR: 4.3443   
 Total features in input file: 40
-#0 (i_test.css): documents: 300, features: 34780,  prob: 9.60e-01, pR:  13.86 
-#1 (q_test.css): documents: 176, features: 32821,  prob: 3.95e-02, pR: -13.86 
+#0 (label +1): documents: 193, features: 15809, prob: 8.02e-01, pR:   4.34
+#1 (label -1): documents: 57, features: 16604, prob: 1.98e-01, pR:  -4.34
+
+**** Alternating Example SVM Network Classifier TRAINING
+
+**** Alternating Example SVM Network Classifier RUNNING TEST
+ type A 
+CLASSIFY fails success probability: 0.075773 pR: -19.0619
+Best match to class #1 prob: 0.9242 pR: 19.0619   
+Total features in input file: 150
+#0 (label +1): documents: 16, features: 2025, prob: 7.58e-02, pR: -19.06
+#1 (label -1): documents: 15, features: 2026, prob: 9.24e-01, pR:  19.06
+
+ type M 
+CLASSIFY succeeds success probability: 0.784357 pR: 3.7026
+Best match to class #0 prob: 0.7844 pR: 3.7026   
+Total features in input file: 143
+#0 (label +1): documents: 16, features: 2025, prob: 7.84e-01, pR:   3.70
+#1 (label -1): documents: 15, features: 2026, prob: 2.16e-01, pR:  -3.70
 
 
 **** String Kernel SVM (SKS) classifier 
- type I 
-CLASSIFY succeeds; success probability: 0.6178  pR: 2.0847
-Best match to file #0 (i_test.css) prob: 0.6178  pR: 2.0847  
-Total features in input file: 69
-#0 (i_test.css):documents: 300, features: 52237,  prob: 6.18e-01, pR:   2.08 
-#1 (q_test.css):documents: 176, features: 69553,  prob: 3.82e-01, pR:  -2.08 
+ type M 
+CLASSIFY succeeds; success probability: 0.9749  pR: 15.8927
+Best match to file #0 (m_test.css) prob: 0.9749  pR: 15.8927  
+Total features in input file: 62
+#0 (m_test.css):documents: 193, features: 22281,  prob: 9.75e-01, pR:  15.89 
+#1 (a_test.css):documents: 57, features: 22045,  prob: 2.51e-02, pR: -15.89 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9733  pR: 15.6215
-Best match to file #0 (i_test.css) prob: 0.9733  pR: 15.6215  
-Total features in input file: 51
-#0 (i_test.css):documents: 300, features: 52237,  prob: 9.73e-01, pR:  15.62 
-#1 (q_test.css):documents: 176, features: 69553,  prob: 2.67e-02, pR: -15.62 
+ type M 
+CLASSIFY succeeds; success probability: 0.9782  pR: 16.5262
+Best match to file #0 (m_test.css) prob: 0.9782  pR: 16.5262  
+Total features in input file: 73
+#0 (m_test.css):documents: 193, features: 22281,  prob: 9.78e-01, pR:  16.53 
+#1 (a_test.css):documents: 57, features: 22045,  prob: 2.18e-02, pR: -16.53 
 
 
 **** String Kernel SVM (SKS) Unique classifier 
- type I 
-CLASSIFY succeeds; success probability: 0.6487  pR: 2.6635
-Best match to file #0 (i_test.css) prob: 0.6487  pR: 2.6635  
-Total features in input file: 68
-#0 (i_test.css):documents: 300, features: 42397,  prob: 6.49e-01, pR:   2.66 
-#1 (q_test.css):documents: 176, features: 37979,  prob: 3.51e-01, pR:  -2.66 
+ type M 
+CLASSIFY succeeds; success probability: 0.9114  pR: 10.1239
+Best match to file #0 (m_test.css) prob: 0.9114  pR: 10.1239  
+Total features in input file: 61
+#0 (m_test.css):documents: 193, features: 19836,  prob: 9.11e-01, pR:  10.12 
+#1 (a_test.css):documents: 57, features: 17656,  prob: 8.86e-02, pR: -10.12 
 
- type I 
-CLASSIFY succeeds; success probability: 0.9738  pR: 15.6980
-Best match to file #0 (i_test.css) prob: 0.9738  pR: 15.6980  
-Total features in input file: 49
-#0 (i_test.css):documents: 300, features: 42397,  prob: 9.74e-01, pR:  15.70 
-#1 (q_test.css):documents: 176, features: 37979,  prob: 2.62e-02, pR: -15.70 
+ type M 
+CLASSIFY succeeds; success probability: 0.8047  pR: 6.1506
+Best match to file #0 (m_test.css) prob: 0.8047  pR: 6.1506  
+Total features in input file: 70
+#0 (m_test.css):documents: 193, features: 19836,  prob: 8.05e-01, pR:   6.15 
+#1 (a_test.css):documents: 57, features: 17656,  prob: 1.95e-01, pR:  -6.15 
 
 
 **** Bytewise Correlation classifier 
- type Q 
-CLASSIFY fails; success probability: 0.0096  pR: -2.0155
-Best match to file #1 (QUICKREF.txt) prob: 0.9904  pR: 2.0155  
-Total features in input file: 70416
-#0 (INTRO.txt): features: 53186, L1: 219063 L2: 325594 L3: 585264, l4: 1747198 prob: 9.56e-03, pR:  -2.02 
-#1 (QUICKREF.txt): features: 70416, L1: 394864 L2: 611088 L3: 6596464, l4: 326363316 prob: 9.90e-01, pR:   2.02 
+ type A 
+CLASSIFY fails; success probability: 0.0083  pR: -2.0751
+Best match to file #1 (Alice_In_Wonderland_Chap_1_And_2.txt) prob: 0.9917  pR: 2.0751  
+Total features in input file: 22451
+#0 (Macbeth_Act_IV.txt): features: 22669, L1: 83555 L2: 114702 L3: 173428, l4: 358614 prob: 8.34e-03, pR:  -2.08 
+#1 (Alice_In_Wonderland_Chap_1_And_2.txt): features: 22451, L1: 96783 L2: 180165 L3: 1550947, l4: 49378101 prob: 9.92e-01, pR:   2.08 
 
- type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 4.3458
-Best match to file #0 (INTRO.txt) prob: 1.0000  pR: 4.3458  
-Total features in input file: 53186
-#0 (INTRO.txt): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, l4: 52869796589 prob: 1.00e+00, pR:   4.35 
-#1 (QUICKREF.txt): features: 70416, L1: 1085246 L2: 1389813 L3: 2033683, l4: 4362813 prob: 4.51e-05, pR:  -4.35 
+ type M 
+CLASSIFY succeeds; success probability: 0.9223  pR: 1.0742
+Best match to file #0 (Macbeth_Act_IV.txt) prob: 0.9223  pR: 1.0742  
+Total features in input file: 22669
+#0 (Macbeth_Act_IV.txt): features: 22669, L1: 406150 L2: 611044 L3: 2022288, l4: 28898980 prob: 9.22e-01, pR:   1.07 
+#1 (Alice_In_Wonderland_Chap_1_And_2.txt): features: 22451, L1: 476674 L2: 678005 L3: 1148703, l4: 2858981 prob: 7.77e-02, pR:  -1.07 
 
 
 **** Clump / Pmulc Test 
-...............................................................Likely result: 
-PMULC succeeds; success probabilty: 1.0000 pR: 61.5681
-Best match to clump #8 (clump_#8) prob: 1.0000  pR: 61.5681
-Closest document: #46 (document_#46) affinity: 0.8233
-Total features in input file: 259
-1: (clump_#1): documents: 4  affinity: 0.1529  prob: 0.0000  pR: -70.0000
-2: (clump_#2): documents: 2  affinity: 0.0942  prob: 0.0000  pR: -70.0000
-3: (clump_#3): documents: 49  affinity: 0.1235  prob: 0.0000  pR: -70.0000
-4: (clump_#4): documents: 3  affinity: 0.1136  prob: 0.0000  pR: -70.0000
-5: (clump_#5): documents: 1  affinity: 0.1408  prob: 0.0000  pR: -70.0000
-6: (clump_#6): documents: 1  affinity: 0.1379  prob: 0.0000  pR: -70.0000
-7: (clump_#7): documents: 1  affinity: 0.0991  prob: 0.0000  pR: -70.0000
-8: (clump_#8): documents: 2  affinity: 0.5186  prob: 1.0000  pR: 61.5681
+............................................... Unsure result 
+PMULC fails; success probabilty: 0.0089 pR: -20.4448
+Best match to clump #24 (clump_#24) prob: 0.0089  pR: -20.4448
+Closest document: #38 (document_#38) affinity: 0.7076
+Total features in input file: 211
+1: (clump_#1): documents: 3  affinity: 0.1321  prob: 0.0000  pR: -70.0000
+2: (clump_#2): documents: 2  affinity: 0.1186  prob: 0.0000  pR: -70.0000
+3: (clump_#3): documents: 1  affinity: 0.1380  prob: 0.0000  pR: -70.0000
+4: (clump_#4): documents: 4  affinity: 0.1298  prob: 0.0000  pR: -70.0000
+5: (clump_#5): documents: 1  affinity: 0.1121  prob: 0.0000  pR: -70.0000
+6: (clump_#6): documents: 1  affinity: 0.1431  prob: 0.0000  pR: -70.0000
+7: (clump_#7): documents: 2  affinity: 0.1300  prob: 0.0000  pR: -70.0000
+8: (clump_#8): documents: 1  affinity: 0.0980  prob: 0.0000  pR: -70.0000
+9: (clump_#9): documents: 1  affinity: 0.1564  prob: 0.0000  pR: -70.0000
+10: (clump_#10): documents: 7  affinity: 0.1173  prob: 0.0000  pR: -70.0000
+11: (clump_#11): documents: 1  affinity: 0.1436  prob: 0.0000  pR: -70.0000
+12: (clump_#12): documents: 1  affinity: 0.1392  prob: 0.0000  pR: -70.0000
+13: (clump_#13): documents: 1  affinity: 0.1042  prob: 0.0000  pR: -70.0000
+14: (clump_#14): documents: 2  affinity: 0.1344  prob: 0.0000  pR: -70.0000
+15: (clump_#15): documents: 1  affinity: 0.1171  prob: 0.0000  pR: -70.0000
+16: (clump_#16): documents: 1  affinity: 0.1116  prob: 0.0000  pR: -70.0000
+17: (clump_#17): documents: 1  affinity: 0.1134  prob: 0.0000  pR: -70.0000
+18: (clump_#18): documents: 2  affinity: 0.1162  prob: 0.0000  pR: -70.0000
+19: (clump_#19): documents: 1  affinity: 0.1019  prob: 0.0000  pR: -70.0000
+20: (clump_#20): documents: 1  affinity: 0.1322  prob: 0.0000  pR: -70.0000
+21: (clump_#21): documents: 1  affinity: 0.1461  prob: 0.0000  pR: -70.0000
+22: (clump_#22): documents: 1  affinity: 0.1169  prob: 0.0000  pR: -70.0000
+23: (clump_#23): documents: 1  affinity: 0.1131  prob: 0.0000  pR: -70.0000
+24: (clump_#24): documents: 9  affinity: 0.2366  prob: 0.0089  pR: -20.4448
 
 Likely result: 
-PMULC succeeds; success probabilty: 1.0000 pR: 59.1777
-Best match to clump #2 (clump_#2) prob: 1.0000  pR: 59.1777
-Closest document: #1 (document_#1) affinity: 0.7596
-Total features in input file: 223
-1: (clump_#1): documents: 4  affinity: 0.1356  prob: 0.0000  pR: -70.0000
-2: (clump_#2): documents: 2  affinity: 0.4753  prob: 1.0000  pR: 59.1777
-3: (clump_#3): documents: 49  affinity: 0.1419  prob: 0.0000  pR: -70.0000
-4: (clump_#4): documents: 3  affinity: 0.1230  prob: 0.0000  pR: -70.0000
-5: (clump_#5): documents: 1  affinity: 0.1208  prob: 0.0000  pR: -70.0000
-6: (clump_#6): documents: 1  affinity: 0.1421  prob: 0.0000  pR: -70.0000
-7: (clump_#7): documents: 1  affinity: 0.1173  prob: 0.0000  pR: -70.0000
-8: (clump_#8): documents: 2  affinity: 0.0928  prob: 0.0000  pR: -70.0000
+PMULC succeeds; success probabilty: 1.0000 pR: 60.3644
+Best match to clump #2 (clump_#2) prob: 1.0000  pR: 60.3644
+Closest document: #1 (document_#1) affinity: 0.7264
+Total features in input file: 179
+1: (clump_#1): documents: 3  affinity: 0.1365  prob: 0.0000  pR: -70.0000
+2: (clump_#2): documents: 2  affinity: 0.4956  prob: 1.0000  pR: 60.3644
+3: (clump_#3): documents: 1  affinity: 0.1242  prob: 0.0000  pR: -70.0000
+4: (clump_#4): documents: 4  affinity: 0.1411  prob: 0.0000  pR: -70.0000
+5: (clump_#5): documents: 1  affinity: 0.1009  prob: 0.0000  pR: -70.0000
+6: (clump_#6): documents: 1  affinity: 0.0933  prob: 0.0000  pR: -70.0000
+7: (clump_#7): documents: 2  affinity: 0.1343  prob: 0.0000  pR: -70.0000
+8: (clump_#8): documents: 1  affinity: 0.1013  prob: 0.0000  pR: -70.0000
+9: (clump_#9): documents: 1  affinity: 0.1053  prob: 0.0000  pR: -70.0000
+10: (clump_#10): documents: 7  affinity: 0.1213  prob: 0.0000  pR: -70.0000
+11: (clump_#11): documents: 1  affinity: 0.1484  prob: 0.0000  pR: -70.0000
+12: (clump_#12): documents: 1  affinity: 0.1253  prob: 0.0000  pR: -70.0000
+13: (clump_#13): documents: 1  affinity: 0.1077  prob: 0.0000  pR: -70.0000
+14: (clump_#14): documents: 2  affinity: 0.1080  prob: 0.0000  pR: -70.0000
+15: (clump_#15): documents: 1  affinity: 0.0877  prob: 0.0000  pR: -70.0000
+16: (clump_#16): documents: 1  affinity: 0.1474  prob: 0.0000  pR: -70.0000
+17: (clump_#17): documents: 1  affinity: 0.1346  prob: 0.0000  pR: -70.0000
+18: (clump_#18): documents: 2  affinity: 0.1201  prob: 0.0000  pR: -70.0000
+19: (clump_#19): documents: 1  affinity: 0.1053  prob: 0.0000  pR: -70.0000
+20: (clump_#20): documents: 1  affinity: 0.1366  prob: 0.0000  pR: -70.0000
+21: (clump_#21): documents: 1  affinity: 0.1094  prob: 0.0000  pR: -70.0000
+22: (clump_#22): documents: 1  affinity: 0.1388  prob: 0.0000  pR: -70.0000
+23: (clump_#23): documents: 1  affinity: 0.1018  prob: 0.0000  pR: -70.0000
+24: (clump_#24): documents: 9  affinity: 0.1191  prob: 0.0000  pR: -70.0000
 
 Likely result: 
-0 (document_#0) clump: 1 (clump_#1) affinity: 0.1439
-1 (document_#1) clump: 2 (clump_#2) affinity: 0.0887
-2 (document_#2) clump: 3 (clump_#3) affinity: 0.1784
-3 (document_#3) clump: 4 (clump_#4) affinity: 0.1651
-4 (document_#4) clump: 4 (clump_#4) affinity: 0.1949
-5 (document_#5) clump: 4 (clump_#4) affinity: 0.2162
-6 (document_#6) clump: 3 (clump_#3) affinity: 0.1957
-7 (document_#7) clump: 1 (clump_#1) affinity: 0.1418
-8 (document_#8) clump: 1 (clump_#1) affinity: 0.1535
-9 (document_#9) clump: 1 (clump_#1) affinity: 0.1432
-10 (document_#10) clump: 3 (clump_#3) affinity: 0.1793
-11 (document_#11) clump: 3 (clump_#3) affinity: 0.1880
-12 (document_#12) clump: 3 (clump_#3) affinity: 0.2052
-13 (document_#13) clump: 3 (clump_#3) affinity: 0.1842
-14 (document_#14) clump: 3 (clump_#3) affinity: 0.2288
-15 (document_#15) clump: 3 (clump_#3) affinity: 0.1805
-16 (document_#16) clump: 3 (clump_#3) affinity: 0.1775
-17 (document_#17) clump: 3 (clump_#3) affinity: 0.1966
-18 (document_#18) clump: 2 (clump_#2) affinity: 0.0887
-19 (document_#19) clump: 3 (clump_#3) affinity: 0.1801
-20 (document_#20) clump: 3 (clump_#3) affinity: 0.2187
-21 (document_#21) clump: 3 (clump_#3) affinity: 0.2215
-22 (document_#22) clump: 3 (clump_#3) affinity: 0.2267
-23 (document_#23) clump: 3 (clump_#3) affinity: 0.1825
-24 (document_#24) clump: 3 (clump_#3) affinity: 0.2033
-25 (document_#25) clump: 3 (clump_#3) affinity: 0.1979
-26 (document_#26) clump: 3 (clump_#3) affinity: 0.1834
-27 (document_#27) clump: 3 (clump_#3) affinity: 0.2122
-28 (document_#28) clump: 3 (clump_#3) affinity: 0.1857
-29 (document_#29) clump: 3 (clump_#3) affinity: 0.1606
-30 (document_#30) clump: 3 (clump_#3) affinity: 0.2000
-31 (document_#31) clump: 3 (clump_#3) affinity: 0.2196
-32 (document_#32) clump: 3 (clump_#3) affinity: 0.2208
-33 (document_#33) clump: 3 (clump_#3) affinity: 0.1976
-34 (document_#34) clump: 5 (clump_#5) affinity: 0.0000
-35 (document_#35) clump: 6 (clump_#6) affinity: 0.0000
-36 (document_#36) clump: 3 (clump_#3) affinity: 0.1721
-37 (document_#37) clump: 3 (clump_#3) affinity: 0.1822
-38 (document_#38) clump: 3 (clump_#3) affinity: 0.1953
-39 (document_#39) clump: 3 (clump_#3) affinity: 0.1969
-40 (document_#40) clump: 3 (clump_#3) affinity: 0.1905
-41 (document_#41) clump: 3 (clump_#3) affinity: 0.1981
-42 (document_#42) clump: 3 (clump_#3) affinity: 0.1924
-43 (document_#43) clump: 3 (clump_#3) affinity: 0.1721
-44 (document_#44) clump: 7 (clump_#7) affinity: 0.0000
-45 (document_#45) clump: 3 (clump_#3) affinity: 0.1875
-46 (document_#46) clump: 8 (clump_#8) affinity: 0.1011
-47 (document_#47) clump: 8 (clump_#8) affinity: 0.1011
-48 (document_#48) clump: 3 (clump_#3) affinity: 0.1751
-49 (document_#49) clump: 3 (clump_#3) affinity: 0.1997
-50 (document_#50) clump: 3 (clump_#3) affinity: 0.1898
-51 (document_#51) clump: 3 (clump_#3) affinity: 0.1863
-52 (document_#52) clump: 3 (clump_#3) affinity: 0.2207
-53 (document_#53) clump: 3 (clump_#3) affinity: 0.2043
-54 (document_#54) clump: 3 (clump_#3) affinity: 0.2307
-55 (document_#55) clump: 3 (clump_#3) affinity: 0.2261
-56 (document_#56) clump: 3 (clump_#3) affinity: 0.2070
-57 (document_#57) clump: 3 (clump_#3) affinity: 0.1987
-58 (document_#58) clump: 3 (clump_#3) affinity: 0.2024
-59 (document_#59) clump: 3 (clump_#3) affinity: 0.2019
-60 (document_#60) clump: 3 (clump_#3) affinity: 0.1767
-61 (document_#61) clump: 3 (clump_#3) affinity: 0.1726
-62 (document_#62) clump: 3 (clump_#3) affinity: 0.1731
+0 (document_#0) clump: 1 (clump_#1) affinity: 0.1255
+1 (document_#1) clump: 2 (clump_#2) affinity: 0.2121
+2 (document_#2) clump: 2 (clump_#2) affinity: 0.2121
+3 (document_#3) clump: 3 (clump_#3) affinity: 0.0000
+4 (document_#4) clump: 1 (clump_#1) affinity: 0.1628
+5 (document_#5) clump: 4 (clump_#4) affinity: 0.1535
+6 (document_#6) clump: 4 (clump_#4) affinity: 0.1334
+7 (document_#7) clump: 4 (clump_#4) affinity: 0.1957
+8 (document_#8) clump: 4 (clump_#4) affinity: 0.1598
+9 (document_#9) clump: 5 (clump_#5) affinity: 0.0000
+10 (document_#10) clump: 1 (clump_#1) affinity: 0.1821
+11 (document_#11) clump: 6 (clump_#6) affinity: 0.0000
+12 (document_#12) clump: 7 (clump_#7) affinity: 0.1364
+13 (document_#13) clump: 7 (clump_#7) affinity: 0.1364
+14 (document_#14) clump: 8 (clump_#8) affinity: 0.0000
+15 (document_#15) clump: 9 (clump_#9) affinity: 0.0000
+16 (document_#16) clump: 10 (clump_#10) affinity: 0.1744
+17 (document_#17) clump: 10 (clump_#10) affinity: 0.1882
+18 (document_#18) clump: 10 (clump_#10) affinity: 0.1999
+19 (document_#19) clump: 10 (clump_#10) affinity: 0.1940
+20 (document_#20) clump: 10 (clump_#10) affinity: 0.1593
+21 (document_#21) clump: 10 (clump_#10) affinity: 0.1684
+22 (document_#22) clump: 10 (clump_#10) affinity: 0.1682
+23 (document_#23) clump: 11 (clump_#11) affinity: 0.0000
+24 (document_#24) clump: 12 (clump_#12) affinity: 0.0000
+25 (document_#25) clump: 13 (clump_#13) affinity: 0.0000
+26 (document_#26) clump: 14 (clump_#14) affinity: 0.0916
+27 (document_#27) clump: 15 (clump_#15) affinity: 0.0000
+28 (document_#28) clump: 16 (clump_#16) affinity: 0.0000
+29 (document_#29) clump: 17 (clump_#17) affinity: 0.0000
+30 (document_#30) clump: 18 (clump_#18) affinity: 0.0892
+31 (document_#31) clump: 18 (clump_#18) affinity: 0.0892
+32 (document_#32) clump: 19 (clump_#19) affinity: 0.0000
+33 (document_#33) clump: 20 (clump_#20) affinity: 0.0000
+34 (document_#34) clump: 14 (clump_#14) affinity: 0.0916
+35 (document_#35) clump: 21 (clump_#21) affinity: 0.0000
+36 (document_#36) clump: 22 (clump_#22) affinity: 0.0000
+37 (document_#37) clump: 23 (clump_#23) affinity: 0.0000
+38 (document_#38) clump: 24 (clump_#24) affinity: 0.2282
+39 (document_#39) clump: 24 (clump_#24) affinity: 0.2296
+40 (document_#40) clump: 24 (clump_#24) affinity: 0.2475
+41 (document_#41) clump: 24 (clump_#24) affinity: 0.2399
+42 (document_#42) clump: 24 (clump_#24) affinity: 0.2422
+43 (document_#43) clump: 24 (clump_#24) affinity: 0.1964
+44 (document_#44) clump: 24 (clump_#24) affinity: 0.2248
+45 (document_#45) clump: 24 (clump_#24) affinity: 0.2493
+46 (document_#46) clump: 24 (clump_#24) affinity: 0.2191
+
+
+**** Principal Component Analysis (PCA) unigram classifier 
+ type A 
+CLASSIFY fails success probability: 0.499846 pR: -0.3073
+Best match to class #1 prob: 0.5002 pR: 0.3073   
+Total features in input file: 11
+#0 (label +1): documents: 193, features: 3567, prob: 5.00e-01, pR:  -0.31
+#1 (label -1): documents: 57, features: 3174, prob: 5.00e-01, pR:   0.31
+
+ type M 
+CLASSIFY succeeds success probability: 0.506965 pR: 13.9301
+Best match to class #0 prob: 0.5070 pR: 13.9301   
+Total features in input file: 8
+#0 (label +1): documents: 193, features: 3567, prob: 5.07e-01, pR:  13.93
+#1 (label -1): documents: 57, features: 3174, prob: 4.93e-01, pR: -13.93
+
+
+**** Principal Component Analysis (PCA) classifier 
+ type A 
+CLASSIFY fails success probability: 0.497977 pR: -4.0453
+Best match to class #1 prob: 0.5020 pR: 4.0453   
+Total features in input file: 47
+#0 (label +1): documents: 193, features: 15809, prob: 4.98e-01, pR:  -4.05
+#1 (label -1): documents: 57, features: 16604, prob: 5.02e-01, pR:   4.05
+
+ type M 
+CLASSIFY succeeds success probability: 0.502855 pR: 5.7103
+Best match to class #0 prob: 0.5029 pR: 5.7103   
+Total features in input file: 39
+#0 (label +1): documents: 193, features: 15809, prob: 5.03e-01, pR:   5.71
+#1 (label -1): documents: 57, features: 16604, prob: 4.97e-01, pR:  -5.71
+
+**** Alternating Example PCA Network Classifier TRAINING
+
+**** Alternating Example PCA Network Classifier RUNNING TEST
+ type A 
+CLASSIFY fails success probability: 0.171492 pR: -787.5435
+Best match to class #1 prob: 0.8285 pR: 787.5435   
+Total features in input file: 149
+#0 (label +1): documents: 16, features: 2025, prob: 1.71e-01, pR: -787.54
+#1 (label -1): documents: 15, features: 2026, prob: 8.29e-01, pR: 787.54
+
+ type M 
+CLASSIFY succeeds success probability: 0.779493 pR: 631.3570
+Best match to class #0 prob: 0.7795 pR: 631.3570   
+Total features in input file: 142
+#0 (label +1): documents: 16, features: 2025, prob: 7.79e-01, pR: 631.36
+#1 (label -1): documents: 15, features: 2026, prob: 2.21e-01, pR: -631.36
 

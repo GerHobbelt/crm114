@@ -1,19 +1,23 @@
-//  crm_neural_net.c
-//
+//	crm_neural_net.c - a neural net classifier
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+// TODO: merge for real!
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////
 //  derived from crm_osb_hyperspace.c by Joe Langeway, rehacked by
 //  Bill Yerazunis.  Since this code is directly derived from
 //  crm_osb_hyperspace.c and produced for the crm114 project so:
 //
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact Bill or Joe for details.
-//
 /////////////////////////////////////////////////////////////////////
-//
-//     crm_neural_net.c - a neural net classifier
 //
 //     Original spec by Bill Yerazunis, original code by Joe Langeway,
 //     recode for CRM114 use by Bill Yerazunis.
@@ -251,9 +255,9 @@ typedef struct nn_per_doc_file_header
 //   arrays with runtime defined dimensions very well.
 //
 //    Just to remind you- nn is the neural net, "neuron" is the neuron being
-//    activated, and "channel" is the channel on that neuron.  (note that
-//    this means actual storage is in "odometer" format - the last arg
-//    varying fastest.
+//    activated, and "channel" is the input channel on that neuron.
+//    (note that this means actual storage is in "odometer" format -
+//    the last arg varying fastest).
 //
 inline static float *arefWin(NEURAL_NET_STRUCT *nn, int neuron, int channel)
 {
@@ -891,7 +895,7 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen, uint32_t *
     //   hope your system has large pages or doesn't set up memory protection for mmap-ed address spaces.
     //   When prayer works, see item above, otherwise move one down:
     // - you are really SOL: either you're system is one of those bastards which doesn't nil a partially
-    //   filled memory page (or eqv.: your HD sectors are filled will unknown, non-zero data
+    //   filled memory page (or eqv.: your HD sectors are filled with unknown, non-zero data
     //   beyond the current file end, which consequently gets mapping into that last mem page) or you're AT
     //   the page edge, so you don't get a chance and trigger the hardware anyway and the coredump is yours.
     //
@@ -1418,8 +1422,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     found_duplicate = 0;
 #if !SIZE_BASED_JUMP
     for (k = nn->docs_start;
-         k < nn->docs_end
-        && (k[0] = 0 || k[0] == 1)      // Find a start-of-doc sentinel
+         k < (nn->docs_end - 100)
+        && (k[0] == 0 || k[0] == 1)      // Find a start-of-doc sentinel
         && k[2] != sum;                 // does the checksum match?
          k++)
         ;                  // TBD: speed up by jumping over trains by using length in header k[0] ?

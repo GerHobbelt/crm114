@@ -1,9 +1,15 @@
-#! /usr/bin/crm   
+#! /usr/bin/crm
+#
+#	backwardstest.crm - search backwards for foo, then bar.ooo
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 {
 	{
 		output / searching for a foo.../
 		match /foo/
-		output /found a foo, searching for bar.ooo... / 
+		output /found a foo, searching for bar.ooo... /
 		match (:b:) <backwards> /bar.ooo/
 		output /found a bar.ooo: -:*:b:- :*:_nl: /
 	}

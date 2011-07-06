@@ -1,6 +1,12 @@
 #! /usr/bin/crm
-#   do rewriting, based on rewrite rules in rewrites.mfp
 #
+#	rewriteutil.crm - rewrite utility using rewrites.mfp
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
+#   do rewriting, based on rewrite rules in rewrites.mfp
 {
 	isolate (:rewrites:)
 	input (:rewrites:) [:*:_arg2:]
@@ -21,7 +27,7 @@ match [:rewrites:] //
 	match <fromcurrent> (:place:) /:*:fr:/
 	#  Yep, it matched... alter it and do it again
 	#
-	
+
 	alter (:place:) /:*:to:/
 	output [/dev/tty] /./
 	output [/dev/tty] /:*:_dw:\n/
@@ -42,7 +48,7 @@ match [:rewrites:] //
     match //
     match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>->(.*)/
     output [/dev/tty] /:*:_nl:checking :*:ch: --/
-	
+
     #    see if the "fr" regex matches anywhere
     {
 	match <fromcurrent nomultiline> (:place:) /:*:fr:/

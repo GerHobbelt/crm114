@@ -1,17 +1,24 @@
-#! /usr/local/bin/crm114
- 
+#! /usr/bin/crm
+#
+#	paolo_ov3.crm - paolo test script
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 alter (:_dw:) /Return-path: \nEnvelope-to: \nDelivery-date:\nReceived: from\n	by paranoia with esmtp\n	id 1E24Zm-0008Pl-Bq\nReceived: from\nX-Identity-Key: id1\nDate: Mon\nFrom: International Medical Corporation\nX-Accept-Language: en-us, en\nMIME-Version: 1.0\nTo: bengen@vdst-ka.inka.de\nSubject: You have some free time?\nContent-Type: multipart\/related; boundary="------------000708090009050006030006"\nMessage-Id: <E1E24Ze-0001qC-00@mail.inka.de>\nX-CRM114-Version: 20050415.BlameTheIRS\nX-CRM114-Status: SPAM\nContent-Length: 21549\n\nThis is a multi-part message in MIME format.\n--------------000708090009050006030006\nContent-Type: text\/html; charset=us-ascii\nContent-Transfer-Encoding: 7bit\n\n<html><head><meta http-equiv="Content-Type" content="text\/html; charset=iso-8859-1"><\/head><body bgcolor="#FFFFF4" text="#F2C2E6"><p><a href="xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"><IMG SRC="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" border="0" ALT=""><\/a><\/p><p><font color="#FFFFFD">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxx<\/font><\/p><p><font color="#FFFFF4">wwwwwwwwwww? xxxxx<\/font><\/p><\/body><\/html>\n\n--------------000708090009050006030006\nContent-Type: image\/gif;\n name="clonic.GIF"\nContent-Transfer-Encoding: base64\nContent-ID: <iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii>\nContent-Disposition: inline;\n filename="clonic.GIF"\n\noooooooooooooooooooooooo\/\/\/\/\/oooooooooooooooooooooooooooooo\/oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\nooooooooooooooooooooooooooooo\/oooooooooooooooooooooooooooooooooooooooooooooooooo\n...more garbage follows...\n\n--------------000708090009050006030006--\n\n\n/
 
 {
     match (:: :headers: :body:) /(.*?)\n\n(.*)/
 }
+
 isolate (:headers:)
 {
     match <nomultiline> [:headers:] /^Content-Type: .* boundary="(.+)"/ \
     	(:x: :boundary:)
     output /:boundary:=:*:boundary:\n/
 }
+
 isolate (:c:) /0/
 {
     eval (:c:) /:@::*:c:+1:/

@@ -1,14 +1,9 @@
-//  crm_str_funcs.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_str_funcs.c  - string handling functions
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -1554,8 +1549,18 @@ int strnhash(const char *str, int len)
 // The return type was changed to crmhash_t (32-bit unsigned int), and the other
 // parts of the code updated accordingly.
 // -- Fidelis (updated by GerH)
-
-
+//
+// --- comment in BillY's vanilla as per 2011/07; portability of code & some compiler assumptions... ---
+// unsigned long -> unsigned int, following Bill's idea that int is
+// likely to be 32 bits.
+// int32_t -> uint32_t, to get logical >> instead of arithmetic,
+// and an and and in case some compiler takes the loophole that allows
+// it not to implement logical right shift on processors that don't
+// have that instruction.
+// -- Kurt Hackenberg
+// --- /comment in BillY's vanilla as per 2011/07 ---
+//
+//
 #if 0
 crmhash_t strnhash(const char *str, int len)
 #endif
@@ -1589,8 +1594,8 @@ static crmhash_t old_crm114_strnhash(const char *str, size_t len)
         hval |= tmp;                // OR with swapped bytes
 
         //    rotate hval 3 bits to the left (thereby making the
-        //    3rd msb of the above mess the hsb of the output hash)
-        hval = (hval << 3) + (hval >> 29);
+        //    3rd msb of the above mess the msb of the output hash)
+        hval = (hval << 3) | ((hval >> 29) & 0x7);
     }
     return hval;
 }
@@ -2462,6 +2467,13 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
             // file and we need to unmap it and remap it again.
             struct stat statbuf = { 0 };
             int k = stat(filename, &statbuf);
+            // [i_a] I am NOT going to merge in the very last edit here, which is:
+			//           || p->modification_time < statbuf.st_mtime)
+			//       because that one plainly ignores scenarios where multiple nodes
+			//       have (ever so slightly) out-of-sync clocks; not an issue on local
+			//       storage, but an issue when you've got networked storage.
+			//
+			//       The original '!=' check is stricter and safer.
             if (k != 0 || p->modification_time_hash != calc_file_mtime_hash(&statbuf, filename))
             {
                 // yep, someone played with it. unmap and remap
@@ -2543,11 +2555,6 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     p->actual_len = p->requested_len;
     if (p->actual_len < 0)
         p->actual_len = statbuf.st_size - p->start;
-
-#if 0 // this code has moved up
-      //  and put in the mtime as well
-    p->modification_time = statbuf.st_mtime;
-#endif
 
     //  fprintf(stderr, "m");
     p->addr = mmap(NULL,

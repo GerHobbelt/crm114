@@ -1,8 +1,13 @@
-#!/usr/bin/crm
-#   see if default actually works!
+#! /usr/bin/crm
+#
+#	defaulttest.crm - test that default actually works
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output / \n\nCRM114: testing default command line args \n/
 output /blah 1 = :*:blah:\n/
-isolate < default > (:blah:) /new value/ 
+isolate < default > (:blah:) /new value/
 output /blah 2 = :*:blah:\n/
 

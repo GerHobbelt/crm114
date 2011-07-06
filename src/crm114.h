@@ -1,11 +1,7 @@
-//  crm114.h  - Controllable Regex Mutilator base declarations, version X0.1
-//  Copyright William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 1.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
+//	crm114.h - general include settings for crm114.h
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 #ifndef __CRM114_H__
 #define __CRM114_H__
@@ -323,6 +319,10 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         VHT_CELL **vht,
         CSL_CELL *tdw,
         char *txt, int start, int len);
+int crm_expr_pca_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txt, int start, int len);
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         VHT_CELL **vht,
         CSL_CELL *tdw,
@@ -398,6 +398,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         VHT_CELL **vht,
         CSL_CELL *tdw,
         char *txt, int start, int len);
+int crm_expr_pca_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txt, int start, int len);
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         VHT_CELL **vht,
         CSL_CELL *tdw,
@@ -454,6 +458,8 @@ int crm_expr_svm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_pca_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -491,6 +497,8 @@ int crm_expr_bit_entropy_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_svm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_pca_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
@@ -530,6 +538,8 @@ int crm_expr_svm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_pca_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -567,6 +577,8 @@ int crm_expr_bit_entropy_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_svm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_pca_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
@@ -606,6 +618,8 @@ int crm_expr_svm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_pca_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -643,6 +657,8 @@ int crm_expr_bit_entropy_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_svm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_pca_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
@@ -682,6 +698,8 @@ int crm_expr_svm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_pca_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -719,6 +737,8 @@ int crm_expr_bit_entropy_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_svm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_sks_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_pca_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);

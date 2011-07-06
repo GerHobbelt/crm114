@@ -1,8 +1,13 @@
-     The CRM114 Quick Reference Card.  Updated 20090201
+#
+#     QUICKREF.txt - The CRM114 Quick Reference Card
+#
+#
+# Copyright 2006-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
 
-     Copyright W.S. Yerazunis, 2002-2009.  All rights reserved. This
-     software is released under V2.1 of the Gnu Public License. Go to
-     www.fsf.org to get a complete copy of the license.
+     The CRM114 Quick Reference Card.  Updated 20090302
+
 
      This is the CRM114 Language Quick Reference.  For information on the
      mailfilter, see the CRM114_Mailfilter_HOWTO.
@@ -501,7 +506,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /VT-specific cont
                                     the set of sources that shines most 
                                     brightly onto the unknown document's 
                                     hyper-spatial location is the matching 
-                                    class.  EXPERIMENTAL!!!
+                                    class.
 
       <entropy>                   - use the bit-entropy classifier.  This 
                                     uses compressibility of the unknown 
@@ -509,7 +514,6 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /VT-specific cont
                                     perfect compressor model.  No 
                                     tokenization happens- this classifier 
                                     works one bit at a time, always. 
-                                    EXPERIMENTAL !!!
 
       <fscm>                      - use the fast substring compression 
                                     matcher. This measures the 
@@ -525,14 +529,23 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /VT-specific cont
                                     (support vector machine) techniques.
                                     NB: for now VERY EXPERIMENTAL; OSB or
                                     unigram features (default OSB features),
-                                    2-class only, generates A_vs_B files.
-
+                                    2-class only, uses a single statistics file
+                                    and REFUTE for negative examples.
+				    
+      <pca>                       - use the PCA classifier.  This classifier
+                                    is two-class only, uses a single statistics
+                                    file, and uses REFUTE to learn negative
+                                    examples.  EXPERIMENTAL.
+				    
       <sks>                       - use the String Kernel SVM.  String
                                     kernels take one character at a time as
                                     token features, but don't use omitted
                                     subsections like the OSB feature set.
                                     VERY EXPERIMENTAL. 2-class only,
-                                    generates A_vs_B files.
+                                    generates A_vs_B files. 
+				    
+				    THIS FILTER IS STRONGLY DEPRECATED.  
+				    Use <svm string> instead.
 
       <neural>                    - use a three-layer neural network with 
                                     stochastic back-propagation training. 
@@ -551,7 +564,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /VT-specific cont
                                     the previously stored document EXACTLY 
                                     (on a feature-for-feature basis).
 
-                                    VERY EXPERIMENTAL!!!
+                                    EXPERIMENTAL!!!
 
       <correlate>                 - use the full correlative matcher.  Very 
                                     slow, but capable of matching stemmed 
@@ -971,8 +984,8 @@ isolate (:var1: :var2: ... :varN:)
                                     enclose the value.  If no value is
                                     supplied, the previous value is
                                     retained/copied. If there is no previous
-                                    value and no value is supplied, d.
-
+                                    value and no value is supplied, 
+                                    a NULL string is used.
 
 lazy                              - WARNING: reserved for future use
 
@@ -1018,7 +1031,7 @@ learn <flags> (:class:) [:in:] /word-pat/ /svm-specific controls/
                                     are not compatible with the .css files 
                                     for the Markovian (default) and OSB 
                                     classifiers. Remember that for Winnow to 
-                                    be at it's best in accuracy, it has to 
+                                    be at its best in accuracy, it has to 
                                     be trained both with positive cases that 
                                     failed to make a minimum threshold 
                                     (typically with a per-file (not overall) 
@@ -1035,7 +1048,9 @@ learn <flags> (:class:) [:in:] /word-pat/ /svm-specific controls/
                                     the set of sources that shines most
                                     brightly onto the unknown document's
                                     hyper-spatial location is the matching
-                                    class.  EXPERIMENTAL!!!
+                                    class.               
+				    
+				    SLIGHTLY EXPERIMENTAL
 
       <unigram>                   - use single-word features only; using
                                     this this makes CRM114 almost exactly
@@ -1143,8 +1158,7 @@ match <flags> (:var1: ...) [:in: /inregex/] /regex/
       <nocase>                    - ignore case when matching
 
       <literal>                   - No special characters in regex (only
-                                    supported with TREregex, not GNUregex.)
-                                    Think of this as WYSIWYG matching.
+                                    supported with newer TRE versions).
 
       <fromstart>                 - start match at start of the [:in:] var
 
@@ -1199,10 +1213,6 @@ match <flags> (:var1: ...) [:in: /inregex/] /regex/
                                     against.
 
                 /regex/           - POSIX regex (with \ escapes as needed)
-
-          NB: If you build CRM114 to use the GNU regex library for MATCHing,
-              be warned that GNU REGEX has numerous issues.  See the
-              KNOWN_BUGS file for a detailed listing.
 
 
 mutate <flags> (:dest:) [:src:] /from args/ /to args/
@@ -1648,10 +1658,10 @@ match possible that can fit".
              very very slow).
 
 
-  [[:<:]]    matches at the start of a word (GNU regex only)
+  [[:<:]]    no longer supported (GNU regex only)
   \<         matches at the start of a word (TRE regex only)
 
-  [[:>:]]    matches the end of a word (GNU regex only)
+  [[:>:]]    no longer supported (GNU regex only)
   \>         matches at the end of a word (TRE regex only)
 
   ^          As the first character in a match, it matches only at the start 
@@ -1668,8 +1678,11 @@ match possible that can fit".
              or end of line "virtual characters", but it does match a 
              newline).
 
-  (match)    the () go away, and the string that matched inside is available 
-             for capturing.  Use \( and \) to match actual parenthesis.
+  (match)    the () themselves go away, the item inside the parenthesis
+             is treated as a group (so you can (foo)* to get repeated foos),
+             and whatever string matched inside is captured as a submatch
+	     for any match variables.  Use \( and \) to match actual
+	     parenthesis.
 
   a|b        match a _or_ b, such as foo|bar which will match "foo" or "bar"
              (multiple characters!).  To get a shorter extent of ORing, use
@@ -1682,7 +1695,8 @@ they'd do from their names.
   [[:alnum:]]   <-- a-z, A-Z and 0-9
   [[:alpha:]]   <-- a-z and A-Z
   [[:blank:]]   <-- space and tab only
-  [[:space:]]   <-- "whitespace" (space, tab, vertical tab (^K), \n, \r, ..)
+  [[:space:]]   <-- "whitespace" (space, tab, vertical tab (^K), \n, \r, ..),
+                    i.e. moves printhead, doesn't put ink / light pixel
   [[:cntrl:]]   <-- control characters
   [[:digit:]]   <-- 0-9
   [[:lower:]]   <-- lower-case letters a-z
@@ -1856,7 +1870,7 @@ The evaluation is done in four sequential passes:
     -------------- Notes on Approximate REGEX matching ---------
 
 The TRE regex engine (which is the default engine) supports approximate
-matching.  The GNU engine does not support approximate matching.
+matching.  The previously used GNU engine did not.
 
 Approximate matching is specified similarly to a "repetition count" in a
 regular regex, using brackets.  This approximation applies to the previous
@@ -1869,10 +1883,10 @@ The basic syntax is:
 
   (text-to-match){~[maxerrs] [#maxsubsts] [+maxinserts] [-maxdeletes]}
 
-Note that the '~' (with an optional maxerr count) is _required_ (that's how
-we know it's an approximate regex rather than just a rep-count); if you
-don't specify a max error count, you will get the best match, if you do, the
-match will have at most that many errors.
+Note that the '~' (tilde, with an optional maxerr count) is _required_
+(that's how we know it's an approximate regex rather than just a
+rep-count); if you don't specify a max error count, you will get the
+best match, if you do, the match will have at most that many errors.
 
 Remember that you specify the changes to the text in the _pattern_ necessary
 to make it match the text in the string being searched.
@@ -2001,19 +2015,62 @@ OSB, but it can filter against very high levels of intentional obfuscation.
 Hyperspace uses a different (and self-growing) file format.  Hyperspace
 usually trains best with a small thick-threshold training, similar to
 Winnow; as of 20061101 the factors have been re-normalized so that
-Hyperspace values within +/- 10 pR units give a good thick-threshold for
+Hyperspace values within +/- 0.1 pR units give a good thick-threshold for
 training.
 
-The bit-entropy filter is a different *kind* of filter; instead of using
-tokens, it constructs an optimal compression system out of the known texts,
-then it tries to compress the unknown text as much as possible, using the
-known texts as prior probabilities. Better compression implies closer match.
-The amazing thing about this is that it works at all- and it actually works
-very well.  Because there's no tokenizer, the entropy filter can work
-against languages that don't use spaces to delimit words, such as some Asian
-languages. It works quite well against spam.  This filter is still
-experimental and non-compatible upgrades may occur - keep your training data
-if you use this filter!
+The bit-entropy filter is a different *kind* of filter; instead of
+using tokens, it constructs an optimized compression system out of the
+known texts at the bit by bit level (yes, bits!  This filter doesn't
+even care about byte alignment).  It then tries to predict the unknown
+text as much as possible, using the known texts as prior
+probabilities.  Better prediction implies closer match.  The amazing
+thing about this is that it works at all - and it actually works very
+well.  Because there's no tokenizer, the entropy filter can work
+against languages that don't use spaces to delimit words, such as some
+Asian languages.  It works quite well against spam.  Because this
+filter works at the bit-at-a-time level, the tokenizing regex is
+ignored.  This filter is still experimental and noncompatible upgrades
+may occur - keep your training data if you use this filter!
+
+The FSCM filter is a realization of an infinite-window LZ-77
+classifier.  The known-example texts are used as a position+runlength
+dictionary and used to compress the unknown.  The better the
+compression, the better the match (unlike plain LZ77, there is an
+additional bonus for very long run matches).  By default, the quantum
+of match in FSCM is one byte, and the "minimum match length" is three
+bytes, but you can change this with the tokenizing regex.  Note that a
+minumum match length much smaller than three bytes will cause this
+filter to run _very_ slowly as the number of possible dictionary
+checks needed grows very quickly.
+
+The SVM support vector machine (as of 200909) is one of the "new
+breed" of CRM114 filter - it uses only ONE statistics file rather than
+two or more.  Like Winnow, the SVM needs both positive and negative
+examples; the SVM tries to find the maximum error margin decision
+weighting between the two classes, as a linear weighting.  Positive
+examples are trained as usual; negative examples are trained with the
+REFUTE flag.  Erasures are done with the ERASE flag.  By default, the
+SVM does a complete retraining using Thorsten Joachim's public
+algorithm; if you are going to train a large set of examples (very
+fast, but still takes linear time), use the APPEND flag to prevent
+training on individual cases.  Training happens only when something is
+LEARNed but APPEND is not set (it's OK to train a NULL text to trigger
+the solver).  The solver will take about 30 seconds per megabyte of
+example text.  This algorithm is not capable of handling more than two
+simultaneous classes.  The SVM is one of the few classifiers that
+works well in a TEFT (Train Every Thing) training environment.
+
+The PCA principal component analysis classifier is like the SVM
+classifier - it uses only one statistics file, and requires both
+positive and negative examples, with negative examples set with REFUTE
+and removals set with ERASE flag.  The PCA classifier uses the Von
+Mises (1929) algorithm to solve for the first eigenvector - that is,
+the linear weighting vector that best describes the variation across
+all of the known inputs, with a heavy weight placed on known class
+membership.  The dividing threshold is then optimally placed.  The PCA
+algorithm is much faster than the SVM algorithm, but not quite as
+accurate.  The PCA works equally well in TEFT and TOE (train on error)
+situations.
 
 
      ------------ Using the CRM114 built-in script debugger ---------
@@ -2584,6 +2641,6 @@ The parts of a CRM114 statement are:
                                (think of it as the "indirect object").
                                Generally these are not directly changed by
                                the action.  These may contain "adjectival
-                               phrases - var restrictions, either by
+                               phrases" - var restrictions, either by
                                subscript or by regex or both.
 

@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	fataltraptest.crm - test trap statement
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #   test the trap statement
 window
 output / :*:_nl: CRM114  testing FAULT\/TRAP... :*:_nl: /
@@ -11,7 +17,7 @@ output / --- you should not see an error yet --- :*:_nl:/
 		trap /.*/
 		output / BUT YOU SHOULD NOT SEE THIS /
 	}
-	output /<--and this, with nothing in between. :*:_nl: :*:_nl:/ 
+	output /<--and this, with nothing in between. :*:_nl: :*:_nl:/
 }
 output / --- the next thing you see SHOULD be an error "unable to read-open"--- :*:_nl:/
 {
@@ -20,7 +26,7 @@ output / --- the next thing you see SHOULD be an error "unable to read-open"--- 
 	}
 	trap (:my_fault:) /.*/
 	{
-		output / Caught the error  - fault text was :*:my_fault: / 
+		output / Caught the error  - fault text was :*:my_fault: /
 	}
 }
 output / --- and again, the next thing you see SHOULD be an error "unable to write-open"--- :*:_nl:/
@@ -31,7 +37,7 @@ output / --- and again, the next thing you see SHOULD be an error "unable to wri
 	}
 	trap (:my_fault:) /.*/
 	{
-		output / Caught the error  - fault text was :*:my_fault: / 
+		output / Caught the error  - fault text was :*:my_fault: /
 	}
 }
 output /:*:_nl:/

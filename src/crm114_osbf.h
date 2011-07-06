@@ -1,14 +1,11 @@
-//  crm114_osbf.h  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2009  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  This file defines CSS header structure, data and constants used
-//  by the OSBF-Bayes classifier.  -- Fidelis Assis - 2004/10/20
-//
+//	crm114_osbf.h - This file defines CSS header structure, data and
+//		constants used by the OSBF-Bayes classifier.
+
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2004-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 
 #ifndef __CRM114_OBSF_H__
 #define __CRM114_OBSF_H__

@@ -1,18 +1,20 @@
-//  crm_expr_clump.c
+//	crm_expr_clump.c - automatically cluster unlabelled documents
 
-//  by Joe Langeway derived from crm_bit_entropy.c and produced for the crm114 so:
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact Bill for details.
-//
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+
+
+
+// TODO merge for real  ; 95% done, needs another going over, but all code changes are done and the typo fixes already existed before.
+
+
+
+
 /////////////////////////////////////////////////////////////////////
-//
-//     crm_expr_clump.c - automatically cluster unlabelled documents.
-//
 //     Original spec by Bill Yerazunis, original code by Joe Langeway,
 //     recode for CRM114 use by Bill Yerazunis.
 //
@@ -28,7 +30,7 @@
  * This file is part of on going research and should not be considered
  * a finished product, a reliable tool, an example of good software
  * engineering, or a reflection of any quality of Joe's besides his
- * tendancy towards int hours.
+ * tendency towards long hours.
  *
  *
  * Here's what's going on:
@@ -37,7 +39,7 @@
  * document is recorded in a matrix. We then find clusters for automatic
  * classification without the need for a gold standard judgement ahead of time.
  *
- * Cluster assignments start at index 1 and negative numbers indicate perma
+ * Cluster assignments start at index 1 and negative numbers indicate permanent
  * assignments made by crm.
  *
  */
@@ -311,12 +313,9 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     int t_len;
     int unigram, unique, string;
 
-    unique = !!(apb->sflags & CRM_UNIQUE);
+    unique = !!(apb->sflags & (CRM_UNIQUE | CRM_STRING));
     unigram = !!(apb->sflags & CRM_UNIGRAM);
     string = !!(apb->sflags & CRM_STRING);
-
-    if (string)
-        unique = 1;
 
     *ate = 0;
 
@@ -837,12 +836,12 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
             max = s->distance_matrix[i];
     }
     scale = (max - min) / (H_BUCKETS - 0.1);
-#if 0 /* [i_a] quick and dirty hack to prevent crash below, but this doesn't help, as now things further down below go bump in the night :-( */
+#if 01 /* [i_a] quick and dirty hack to prevent crash below, but this doesn't help, as now things further down below go bump in the night :-( */
+    /* [i_a] Bill applied almost the same dirty hack (sans floating point inaccuracy check) the next year in 2009, or at least after the Sentansoken release, according to the vanilla diffs */
     if (scale <= FLT_EPSILON && scale >= -FLT_EPSILON)
         scale = 1;
 #endif
     CRM_ASSERT(!(scale <= FLT_EPSILON && scale >= -FLT_EPSILON));
-    t = -1.0;
     for (i = 0; i < j; i++)
     {
         int index = (int)((M[i] - min) / scale);
@@ -871,6 +870,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
     CRM_ASSERT(j != 0);
     gM = t_A / (float)j;
     t_score = 0.0;
+    t = -1.0;
     for (i = 2; i < H_BUCKETS - 2; i++)
     {
         CRM_ASSERT(!((k - C[i]) <= FLT_EPSILON && (k - C[i]) >= -FLT_EPSILON));
@@ -1209,7 +1209,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         return nonfatalerror("Problem compiling this regex:", regex_text);
     }
 
-    unique = !!(apb->sflags & CRM_UNIQUE);
+    unique = !!(apb->sflags & (CRM_UNIQUE & CRM_STRING));
     unigram = !!(apb->sflags & CRM_UNIGRAM);
     bychunk = !!(apb->sflags & CRM_BYCHUNK);
 

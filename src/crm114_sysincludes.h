@@ -1,4 +1,8 @@
-//
+//  crm114_sysincludes.h - Files that we include from the system.
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //   Files that we include from the system.
 
 #ifndef __CRM114_SYSINCLUDES_H__
@@ -833,6 +837,21 @@ static inline int crm_isxdigit(unsigned char c)
 #define isspace(c)              error_you_must_use_the_crm_isspace_equivalent_call !
 #define isupper(c)              error_you_must_use_the_crm_isupper_equivalent_call !
 #define isxdigit(c)             error_you_must_use_the_crm_isxdigit_equivalent_call !
+
+
+
+
+#if !defined(HAVE_SQRTF) && defined(HAVE_SQRT)
+#define crm_sqrtf(val)       sqrt(val)
+#else
+#if defined(HAVE_SQRTF)
+#define crm_sqrtf(val)       sqrtf(val)
+#else
+#error "define/find a suitable high precision sqrtf function for your system"
+#endif
+#endif
+
+
 
 
 /* log(2) */

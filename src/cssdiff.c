@@ -1,12 +1,7 @@
-//  cssutil.c - utility for munging css files, version X0.1
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	cssutil.c - utility for munging css files, version X0.1
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 //  include some standard files
 
@@ -168,7 +163,7 @@ int main(int argc, char **argv)
 
     {
         struct stat statbuf;                  //  filestat buffer
-        FEATUREBUCKET_TYPE *h1, *h2;          //  the text of the hash file
+        FEATUREBUCKET_STRUCT *h1, *h2;          //  the text of the hash file
 
         // parse cmdline options
         while ((opt = getopt(argc, argv, "v")) != -1)
@@ -220,7 +215,7 @@ int main(int argc, char **argv)
                     argv[optind]);
             exit(EXIT_FAILURE);
         }
-        hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
+        hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_STRUCT);
 
         //
         //  and repeat the process for the second file:
@@ -248,7 +243,7 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
 
-        hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
+        hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_STRUCT);
 
         fprintf(stderr, "Sparse spectra file %s has %d bins total\n",
                 argv[optind], hfsize1);

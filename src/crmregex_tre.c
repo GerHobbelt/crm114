@@ -1,9 +1,31 @@
-//       CRM114 Regex redirection bounce package this file bounces
-//       CRM114 regex requests to whichever regex package has been
-//       compiled and linked in to CRM114.
+//	crmregex_tre.c -  CRM114 Regex redirection bounce package for TRE regex
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+
+
+
+
+// TODO   merge for real!
+
+
+
+
+
+
+
+
+
+
+//	This file bounces CRM114 regex requests to whichever regex package
+//	has been compiled and linked in to CRM114.
 //
-//       Adding a new regex package is relatively easy- just mimic the
-//       ifdef stanzas below to map the functions
+//	Adding a new regex package is relatively easy- just mimic the
+//	ifdef stanzas below to map the functions
 //
 //         crm_regcomp
 //         crm_regexec
@@ -11,8 +33,7 @@
 //         crm_regfree
 //         crm_regversion
 //
-//      into whatever calls your preferred regex package uses.
-//
+//	into whatever calls your preferred regex package uses.
 
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -52,7 +73,40 @@ typedef struct
 
 static REGEX_CACHE_BLOCK regex_cache[CRM_REGEX_CACHESIZE] = { { NULL, NULL, 0, 0, 0 } };
 
+
+// debug helper: print supplied description, cache bucket number, regex
+static void fpe_mishmash(char *str, unsigned int i, char *regex, int regex_len)
+{
+  char tmp[128];	// make sure this is big enough
+
+  sprintf(tmp, "%sregex_cache[%u]: ", str, i);
+  fpe_regex(tmp, regex, regex_len, "\n");
+}
+
+// debug helper: print a cache bucket with a supplied description
+static void fpe_bucket(char *str, unsigned int i)
+{
+  fpe_mishmash(str, i, regex_cache[i].regex, regex_cache[i].regex_len);
+}
+
 #endif
+
+
+// debug helper: print a counted regex on stderr, quoted, with trimmings
+static void fpe_regex(char *before, char *regex, long regex_len, char *after)
+{
+  long i;
+
+  if (before != NULL)
+    fprintf(stderr, "%s", before);
+  fputc('"', stderr);
+  for (i = 0; i < regex_len; i++)
+    fputc(regex[i], stderr);
+  fputc('"', stderr);
+  if (after != NULL)
+    fprintf(stderr, "%s", after);
+}
+
 
 
 //
@@ -81,6 +135,9 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
     if (internal_trace)
     {
         int i;
+
+fpe_regex("compiling regex ", regex, regex_len, "\n");
+
         fprintf(stderr, "\ncompiling regex '%s', len %d, in hex: ",
                 regex, regex_len);
         for (i = 0; i < regex_len; i++)
@@ -186,6 +243,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
 #endif
         if (internal_trace)
         {
+fpe_mishmash((found_it ? "found in " : "not found in "), i, regex, regex_len);
             if (found_it == CRM_REGEX_CACHESIZE)
                 fprintf(stderr, "couldn't find it\n");
             else
@@ -392,7 +450,7 @@ void crm_regfree(regex_t *preg)
 #endif
 }
 
-char *crm_regversion(void)
+const char *crm_regversion(void)
 {
     static char vs[256];
     int cfg_approx = 0;

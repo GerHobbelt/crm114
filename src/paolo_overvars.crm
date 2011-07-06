@@ -1,4 +1,11 @@
-#! /usr/local/bin/crm114
+#! /usr/bin/crm
+#
+#	paolo_overvars.com - paolo written testscript
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 {
      window
      output /isolate :a: as 'hdgdgb aaa hdgdb', match b as \/aaa\/\n/
@@ -6,7 +13,7 @@
      match (:b:) [:a:] /aaa/
      output /a=:*:a: - b=:*:b:\n/
 
-     output /alter :a: as 'x'\n/	
+     output /alter :a: as 'x'\n/
      alter (:a:) /x/
      output /a=:*:a: - b=:*:b:\n/
 
@@ -18,7 +25,7 @@
      match (:b:) [:a:] /bbb/
      output /a=:*:a: - b=:*:b:\n/
 
-     output /\nnow alter :a: to 'x' again\n/	
+     output /\nnow alter :a: to 'x' again\n/
      alter (:a:) /x/
      output /a=:*:a: - b=:*:b:\n/
 
@@ -30,7 +37,7 @@
      match (:b:) [:a:] /ccc/
      output /a=:*:a: - b=:*:b:\n/
 
-     output /\nnow alter :a: to 'x' again\n/	
+     output /\nnow alter :a: to 'x' again\n/
      alter (:a:) /x/
      output /a=:*:a: - b=:*:b:\n/
 }

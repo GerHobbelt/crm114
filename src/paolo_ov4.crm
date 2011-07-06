@@ -1,17 +1,25 @@
-#! /usr/local/bin/crm114
- 
+#! /usr/bin/crm
+#
+#	paolo_ov4.crm - paolo written test script
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 window
 alter (:_dw:) /HHHHHHHHHHHHHHHHHH\nContent-Type: multipart; boundary="--0123456789"\nhhhhhhhhhhhhhhhhhhhhhh\n\nThis is a multi-part message in MIME format.\n----0123456789\nContent-Type: text\nContent-Transfer-Encoding: 7bit\n\nTTTTTTTTTTTTTTTTTTTTTTT\n\n----0123456789\nContent-Type: image\n name="clonic.GIF"\nContent-Transfer-Encoding: base64\niiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n\nooooooooooooooooooooooooooooooooo\noooooooooooooooooooooooooooo\n\n----0123456789--\n\n\n/
 
 {
     match (:: :headers: :body:) /(.*?)\n\n(.*)/
 }
+
 isolate (:headers:)
 {
     match <nomultiline> [:headers:] /^Content-Type: .* boundary="(.+)"/ \
     	(:x: :boundary:)
     output /:boundary:=:*:boundary:\n/
 }
+
 isolate (:c:) /0/
 {
     eval (:c:) /:@::*:c:+1:/

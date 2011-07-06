@@ -1,14 +1,8 @@
-//  crm_expr_alter.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_expr_alter.c - expression alter or eval tools
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -32,7 +26,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      To prevent infinite loops (or at least many of them) we:
     //      1) strictly limit the total number of loop iterations to
     //         the compile-time parameter MAX_EVAL_ITERATIONS
-    //      2) we also keep an array of the hashes of the last 256 values,
+    //      2) we also keep an array of the hashes of the last MAX_EVAL_ITERATIONS values,
     //         if we see a repeat, we assume that it's a loop and we stop
     //         right there.
 

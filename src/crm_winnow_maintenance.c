@@ -1,14 +1,9 @@
-//  crm_winnow_maintenance_.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
+//	crm_winnow_maintenance.c - microgroom .css files
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 //
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -487,7 +482,7 @@ int crm_create_winnow_cssfile(char *cssfile, int buckets,
 {
     FILE *f;
     int i;
-    FEATUREBUCKET_STRUCT feature = { 0 };
+    WINNOW_FEATUREBUCKET_STRUCT feature = { 0 };
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for writing\n", cssfile);

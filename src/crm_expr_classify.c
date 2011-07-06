@@ -1,14 +1,15 @@
-//  crm_expr_classify.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_expr_classify.c - learn and classify functions for different schema
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+// TODO merge for real       ; FSCM -> fast substring, PCA and SVM function names
+
+
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -98,14 +99,6 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     classifier_flags = apb->sflags;
 
-#if 0
-    //     Joe thinks that this should be a table or a loop.
-    classifier_flags = classifier_flags
-                       & (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                          | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                          | CRM_NEURAL_NET);
-#endif
-
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
@@ -171,6 +164,10 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else
     {
@@ -317,6 +314,10 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         retval = crm_expr_markov_classify(csl, apb, vht, tdw, txt, start, len);
     }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_classify(csl, apb, vht, tdw, txt, start, len);
+    }
     else
     {
         apb->sflags |= CRM_AUTODETECT;
@@ -460,6 +461,10 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_merge(csl, apb, txt, start, len);
     }
     else
     {
@@ -607,6 +612,10 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
     }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
+    }
     else
     {
         apb->sflags |= CRM_AUTODETECT;
@@ -751,6 +760,10 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_expr_markov_css_backup(csl, apb, txt, start, len);
     }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_backup(csl, apb, txt, start, len);
+    }
     else
     {
         apb->sflags |= CRM_AUTODETECT;
@@ -893,6 +906,10 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_restore(csl, apb, txt, start, len);
     }
     else
     {
@@ -1037,6 +1054,10 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_info(csl, apb, txt, start, len);
     }
     else
     {
@@ -1183,6 +1204,10 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_expr_markov_css_analyze(csl, apb, txt, start, len);
     }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_analyze(csl, apb, txt, start, len);
+    }
     else
     {
         //    Default with no classifier specified
@@ -1327,6 +1352,10 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_create(csl, apb, txt, start, len);
     }
     else
     {
@@ -1473,6 +1502,10 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_MARKOVIAN)
     {
         retval = crm_expr_markov_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_PCA)
+    {
+        retval = crm_expr_pca_css_migrate(csl, apb, txt, start, len);
     }
     else
     {

@@ -1,5 +1,11 @@
 #! /usr/bin/crm
-{ 
+#
+#	escapetest.crm - test backslash
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+{
 	window
 	output / :*:_nl:  CRM114 testing backslash :*:_nl: :*:_nl:/
 	alter (:_dw:) /?? abcd ??/ 

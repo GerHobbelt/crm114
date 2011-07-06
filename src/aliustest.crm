@@ -1,5 +1,9 @@
 #! /usr/bin/crm
-#   test the alius statement 
+#
+#	aliustest.crm - test alius statement for foo and bar
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 {
 	{
 		output /checking for a foo.../

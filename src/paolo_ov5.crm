@@ -1,5 +1,11 @@
-#! /usr/local/bin/crm114
- 
+#! /usr/bin/crm
+#
+#	paolo_ov5.crm - paolo written test script
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 window
 alter (:_dw:) /HHHH\nC-T: mpt; by="--0123"\nhhhh\n\nMIME.\n----0123\nC-T: txt\nC-T-E: 7\n\nTTTT\n\n----0123\nC-T: img\n name="clonic.GIF"\nC-T-E: b64\niiii\n\noooo\noooo\n\n----0123--\n\n\n/
 

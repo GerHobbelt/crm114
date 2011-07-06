@@ -1,12 +1,16 @@
 #! /usr/bin/crm
-#   crm114 program to be a desk calculator
-#       wsy@merl.com - free to use for any purpose.
+#
+#	calc.crm - desk calculator
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output /Enter expressions.  Hit return to evaluate, empty line to exit\n      /
 {
 	isolate (:y:)
 	input <byline> (:x:)
-	match [:x:] /./ 
+	match [:x:] /./
 	{
 		#   Eval once -- this one does variable subsitutions
 		eval (:x:) /:+:x:/

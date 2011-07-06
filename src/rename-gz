@@ -1,2 +1,0 @@
-#!/bin/bash
-mv crm114.tar.gz crm114-$(date -I).tar.gz

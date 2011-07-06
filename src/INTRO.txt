@@ -1,9 +1,15 @@
+#
+#	INTRO.txt - INTRO to the CRM114 DISCRIMINATOR
+#
+# Copyright 2000-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
 
  		    INTRO to the CRM114 DISCRIMINATOR
-		    
-		 Copyright (c) W.S.Yerazunis, 2000-2003
 
-		    Last update - 15 December 2003
+		 Copyright (c) W.S.Yerazunis, 2000-2009
+
+		    Last update - 2 March 2009
 
 ---------------------------------------------------------------------------
 
@@ -12,7 +18,7 @@
 	CRM114 IS STILL UNDER DEVELOPMENT AND EXPANSION.  YOU MAY
 	FIND THAT THE LANGUAGE CHANGES OUT FROM UNDER YOU .  BUGS,
 	MISFEATURES, OR EVEN EXPLOITS MAY LURK WITHIN THIS CODE.
-		
+
 		IT IS SUPPLIED "AS-IS", WITH NO WARRANTY!
  		   SEE THE GPL LICENSE FOR DETAILS.
 		----------------------------------------
@@ -20,7 +26,7 @@
 This document is the programmer's introduction to CRM114 Discriminator.
 
 If you are reading this to get information on how to install
-CRM114 as a mailfilter, you have the _wrong_ document.  
+CRM114 as a mailfilter, you have the _wrong_ document.
 
 But fear not, we _do_ have the document you want.  The document you want
 if you want to know how to install CRM114 as a mailfilter is:
@@ -44,7 +50,7 @@ activate, and train the CRM114 mailfilter.
 
   "The CRM-114 Discriminator is designed not to receive at _all_.  That
   is, not unless the message is preceded by the proper 3-letter code
-  group."  
+  group."
       - George C. Scott, as General Buck Turgidson, _Dr. Strangelove_
 
                         ------------------
@@ -65,21 +71,21 @@ filtering email, system log streams, html, and other marginally
 human-readable ASCII that may occasion to grace your computer.
 
 CRM114's unique strengths are the data structure (everything is
-a string and a string can overlap another string), it's ability
-to work on truly infinitely long input streams, it's ability to
+a string and a string can overlap another string), its ability
+to work on truly infinitely long input streams, its ability to
 use extremely advanced classifiers to sort text, and the ability
 to do approximate regular expressions (that is, regexes that
 don't quite match) via the TRE regex library.
 
 CRM114 also sports a very powerful subprocess control facility, and
 a unique syntax and program structure that puts the fun back in
-programming (OK, you can run away screaming now).  The syntax is 
+programming (OK, you can run away screaming now).  The syntax is
 declensional rather than positional; the type of quote marks around
 an argument determine what that argument will be used for.
 
 The typical CRM114 program uses regex operations more often
 than addition (in fact, math was only added to TRE in the waning
-days of 2003, well after CRM114 had been in daily use for over 
+days of 2003, well after CRM114 had been in daily use for over
 a year and a half).
 
 In other words, crm114 is a very VERY powerful mutagenic filter that
@@ -92,8 +98,8 @@ is easily categorized by a few characteristic patterns ( such as
 cartridges".)  CRM114 may also be useful to folks who are on multiple
 interlocking mailing lists.
 
-In a bow to Unix-style flexibility, by default CRM114 reads it's
-input from standard input, and by default sends it's output to
+In a bow to Unix-style flexibility, by default CRM114 reads its
+input from standard input, and by default sends its output to
 standard output.  Note that the default action has a zero-length
 output.  Redirection and use of other input or output files is
 possible, as well as the use of windowing, either delimiter-based or
@@ -114,7 +120,7 @@ CRM114 is different than procmail in that:
 * CRM114 allows looping
 
 * CRM114 allows gotos
- 
+
 * CRM114 allows nested statements in a useful way
 
 * CRM114 can learn, if you want.
@@ -156,7 +162,7 @@ emulate (to within the limits of available memory) a single-tape
 Turing machine.  To do this requires an interesting initialization
 of the input tape, which is left as an exercise to the reader (backwards
 hint: each symbol on the tape has two parts - the logic state, and
-a unique identifier; the identifier is used as a marker so that 
+a unique identifier; the identifier is used as a marker so that
 tape motion "to the left" and "to the right" can be performed.
 
 
@@ -172,7 +178,7 @@ expense of a terse format.
 If you want the big manual, we have that too - it's on the web page
 (but not part of this download; it's big).
 
-And again, CRM114 is GPLed software and a community effort - if you 
+And again, CRM114 is GPLed software and a community effort - if you
 have an improvement, a bugfix, or even just a bug, please do report
 it back on the crm114 mailing list.  You can get on the mailing list
 (a closed list, so it won't spam you) via a link on:
@@ -186,7 +192,7 @@ it back on the crm114 mailing list.  You can get on the mailing list
 You should already have the source code.  If you don't, you can fetch
 the full kit from Sourceforge.  CRM114 is GPLed, you can use it freely
 without asking anyone for permission or paying any licensing
-fees. 
+fees.
 
 Open any browser, and go to:
 
@@ -198,7 +204,7 @@ developers and testers), and the "Recommended for Users" version.
 
 Click on the version you want, and downloading will commence.
 
-Once you have the .gz file(s), you will need to unpack them.  
+Once you have the .gz file(s), you will need to unpack them.
 If you have .gz files, type:
 
 	tar -zxvf crm114-whateverversion.tar.gz
@@ -213,35 +219,28 @@ to build and install the executables and utilities.  If the make
 complains of not being able to find the TRE approximate-regex library,
 you can either:
 
-    Plan A) install TRE.  This is recommended.  Since the TRE library
-       is included in the CRM114 distribution, this is easy.  To do
-       this, become root, then type as follows.  You will have to check what
-       version of TRE came with your copy of CRM114 and substitute the
-       version number appropriately :
+    Plan A) install TRE libraries from your distribution.  This is
+       recommended, and how to do so varies with your OS. For Ubuntu,
+       it is installed with:
 
-	     tar -xvf tre-<version>.tar
-	     cd tre-<version>       
-	     ./configure
-	     make
-	     make install
-	     cd ..
+       	  sudo apt-get install libtre-dev
 
-       in which case you will be able to build the executable.  Type
-       
-	     make install
-  
-       again and CRM114 should build and install. 
-	        
 or you can:
 
-    Plan B) use the GNU library - in this case, approximate regexes
-       will not be available, and there will be new and interesting
-       bugs and hangs to explore.  To do this, type
+    Plan B) install TRE libraries manually. Obtain the TRE source directory
+       from http://www.laurikari.net/tre/, and compile it statically.
 
-	    make crm114_gnu
-	    install -m 755 crm114_gnu /usr/bin/crm
+          zcat tre-0.7.5.tar.gz | tar xvf -
+	  cd tre-0.7.5
+	  ./configure --enable-static
+	  make
+	  make install
 
-You can then execute the executable with crm [<arg> [<arg> [<arg> [....]]]] .
+Then try to build CRM114 again.
+
+You can then execute the executable with:
+
+    ./crm [<arg> [<arg> [<arg> [....]]]] .
 
 To install crm114 as a systemwide utility, type "make install" to
 install it as /usr/bin/crm so anyone can use it.
@@ -263,9 +262,9 @@ By default, crm114 runs your program in the following steps:
    2) it runs a preprocessor over your program
    3) it runs an incremental microcompiler over your program
    4) it reads standard input until either it hits EOF (^D
-      on the keyboard), or until it exhausts the data window size 
-      (which you can change with the -w parameter; the default at 
-      version 2003-02-19 is sixteen megabytes).  
+      on the keyboard), or until it exhausts the data window size
+      (which you can change with the -w parameter; the default at
+      version 2003-02-19 is sixteen megabytes).
    5) Then the crm114 runtime system actually runs your program.
 
 Program execution is on a line-by-line, JIT-compiled style.  To speed
@@ -282,7 +281,7 @@ Here's a VERY simple program.
 
         output /Hello, world! \n/
 
-which accepts an arbitrary input (just hit ^D for now), then outputs 
+which accepts an arbitrary input (just hit ^D for now), then outputs
 
 	Hello, world!
 
@@ -298,7 +297,7 @@ program is a CRM114 program and will automagically load CRM114 to run
 your program.  You will also need to do a "chmod o+x yourfilename" to
 enable the file as an executable.
 
-If you don't want to do both of these things, you can still run 
+If you don't want to do both of these things, you can still run
 a bare crm114 program as a command-line argument:
 
 	crm filename
@@ -345,7 +344,7 @@ from standard input; this can be overridden easily)
 All variables are really captured values - these are just start/length
 indices into these big strings.  The power of this is that these
 captured values can overlap and so the view of the input data as a
-contiguous whole is not disrupted. 
+contiguous whole is not disrupted.
 
 These overlapping values retain any heirarchial structure you choose
 to impose.  For instance, a multipart message can be easily
@@ -355,8 +354,8 @@ If you need to, you _can_ create temporary, isolated variables - they
 are just other sections of a big string buffer that don't happen to be
 part of the input buffer (see ISOLATE, below).
 
-Instead of addition and subtraction, the basic operations in crm114 
-is the matching of one string against another, the capturing of a 
+Instead of addition and subtraction, the basic operations in crm114
+is the matching of one string against another, the capturing of a
 value, and the destructive replacement of one value with another.
 
 
@@ -378,7 +377,7 @@ may print out "Hey, there's a foo in the input".
 
 Note that there's no "if" statement here (or, for that matter, in
 _any_ crm program).  The MATCH statement is itself an IF statement.
-If the match succeeds, execution continues with the next statement. 
+If the match succeeds, execution continues with the next statement.
 If the match fails, then execution skips to the end of the { } block.
 This "skip to end of block" is called a FAIL in CRM114 slang.
 
@@ -427,7 +426,7 @@ sequence:
 	{
 		match /(.)(.)\2\1/
 		accept
-	}	  
+	}
 
 You can even use approximate matching, such as accept any file that
 contains a string that can be converted to "Niagara Falls" in no more
@@ -437,20 +436,20 @@ than three inserts, deletes, or substitutions:
 	{
 		match /(Niagara Falls){~3}/
 		accept
-	}	  
+	}
 
 
-CRM114 is (by default) built with the TRE REGEX library as you no
+CRM114 is built with the TRE REGEX library as you no
 doubt read above, and uses the REG_EXTENDED mode of operation
 exclusively.  One (current) limitation of TRE is that if you use
 approximate regex matches, you can't use backreferences and vice
 versa.  Instead of REG_BASIC, TRE offers the <literal> mode, where
 no character has special meaning.
 
-If you build CRM114 with the alternate GNU regex library, you can't
-use approximate regexes at all (GNU regex doesn't support approximate
-regexes), nor <literal> mode, and back-references like \1 never
-seem to work right for me, so I just avoid the whole problem.
+Building CRM114 with the GNU regex library is no longer supported.
+GNU regex doesn't support approximate regexes, nor <literal> mode,
+and back-references like \1 never seem to work right for me, so it is
+no longer included in the source code.
 
 As in most POSIX libraries, the first match possible in a string is
 the one found, and given that starting point, the longest match
@@ -463,13 +462,13 @@ Some handy POSIX-extended regexes are:
 
   ^          as first char of a match, matches only at the start
 	     of the matchable block (that is, the first character of
-	     the string for most matches, and the first character of 
+	     the string for most matches, and the first character of
 	     a line for <nomultiline> matches).
 
   $          as last char of a match, matches at the end of the matchable
 	     block (that is, the last character of the string, and the
 	     last character of the line for <nomultiline> matches).
- 
+
   .   (a period) matches any _single_ character (except start-of-line or
 	    end of line "virtual characters", but it does match a newline).
 
@@ -478,20 +477,20 @@ guess they'd do from their names.
 
   [[:alnum:]]
   [[:alpha:]]
-  [[:blank:]] 
+  [[:blank:]]
   [[:cntrl:]]
-  [[:digit:]] 
+  [[:digit:]]
   [[:lower:]]
-  [[:upper:]] 
+  [[:upper:]]
   [[:graph:]]  <-- any character that puts ink on paper or lights a pixel
   [[:print:]]  <-- any character that moves the "print head" or cursor.
-  [[:punct:]] 
-  [[:space:]] 
+  [[:punct:]]
+  [[:space:]]
   [[:xdigit:]]
 
-Additionally, a '*' means "repeat preceding zero or more times, a 
-"+" means "repeat one or more times", and a '?' means repeat zero or one
-time.  *?, +?, and ?? are the same, but match the _shortest_ match that
+Additionally, a '*' means "repeat preceding zero or more times", a
+'+' means "repeat one or more times", and a '?' means "repeat zero or one
+time".  *?, +?, and ?? are the same, but match the _shortest_ match that
 fits, rather than the longest.
 
 You can specify repeat-counts as well.  {N} means match N copies,
@@ -501,9 +500,9 @@ less by POSIX.)
 
 TRE extends POSIX with approximate matching - {~N} means with no more
 than N insertions, deletions, and substitutions, and {~} means "closest
-match, no matter how many errors".  Note that a string of length 
-Z can be subjected to Z deletions and therefore "match" the empty 
-string, watch out for this quaint (but mathematically correct) 
+match, no matter how many errors".  Note that a string of length
+Z can be subjected to Z deletions and therefore "match" the empty
+string, watch out for this quaint (but mathematically correct)
 behavior if you use {~} matches.  You can also specify some relative
 costing between insertions, deletions, and substitutions;  QUICKREF.txt
 contains some further examples.
@@ -517,7 +516,7 @@ a comment (the reason it doesn't is because the semicolon is too often
 found _in_ a comment, whereas \# is pretty rare.
 
 It's a good idea to use "block comments" throughout your CRM114 programs;
-even though comments can be decieving, it's usually better to have them
+even though comments can be deceiving, it's usually better to have them
 than not to.
 
 
@@ -550,13 +549,13 @@ present in the input stream, but doesn't give us any context.
 
 We can modify the program to work just like grep, by requiring the entire
 match to be satisfied on a single line, and by outputting the
-entire line found.  
+entire line found.
 
 To do this, we use a "modifier flag" on the match statement.  Here,
 we want the match statement to be restricted to a single line, so
 we use the <nomultiline> modifier flag on the match statement.
 
-Since the match is now limited to just the line that contained the 
+Since the match is now limited to just the line that contained the
 input pattern, we can put a .* both in front and in back of the
 actual :*:_arg2: pattern.  ( the pattern ".*" matches the longest string
 possible without caring what it's matching.  It's a wildcard string)
@@ -570,13 +569,13 @@ Here's the modified program:
 	}
 
 This works reasonably well, except it only shows us the first match.
-We can fix that with two more pieces: 
+We can fix that with two more pieces:
 
   -- the "fromend" flag, which tells the match to start looking for a
-     match at the end of the previous match, 
+     match at the end of the previous match,
 
 and
-   
+
   --the LIAF statement, which tells program execution to go back to
     the start of the most recent program { } block and run again.
 
@@ -603,19 +602,19 @@ in a newline in the output so each separate line appears on a new line:
 	}
 
 and sure enough, it acts like grep (without some of the flags that grep
-has), but this version of grep can now do approximate matching.  
+has), but this version of grep can now do approximate matching.
 
 As long as the MATCH succeeds, execution continues through the OUTPUT
 statement and hits the LIAF.  The LIAF statement bounces execution up
 to the open '{' statement and execution continues from there, down
-onto the MATCH statement again. 
+onto the MATCH statement again.
 
 
-[ note: You'll find that if you use this program very much that the 
+[ note: You'll find that if you use this program very much that the
 pattern in arg2 is used as a regex.  It's not a literal match, but a
 match that allows wildcards.  If you wanted to not allow wildcards,
 you'd need to specify <literal> as well as <nomultiline> and < fromend>,
-or you can use the \Q directive to specify verbatim quoting; \Q.*\E 
+or you can use the \Q directive to specify verbatim quoting; \Q.*\E
 specifies the string of a dot followed by a star exactly. ]
 
 
@@ -623,8 +622,8 @@ specifies the string of a dot followed by a star exactly. ]
 
 In the "like a grep" program above, it was perfectly fine to keep the
 result of the match in the captured value :result: (which remained
-part of the input buffer).  Let's see what happens if we surgically 
-alter that value.  
+part of the input buffer).  Let's see what happens if we surgically
+alter that value.
 
 The ALTER statement alters the contents of a captured value by
 inserting or deleting characters at the start of the variable till the
@@ -643,7 +642,7 @@ the first 'foo' with 'IT'S A BAR NOW'
 		output / The whole input file before ALTERing: \n/
 		output /:*:whole_input:/
 		output /\n/
-		
+
 		match (:a_foo:) /foo/
 		alter (:a_foo:) /IT'S A BAR NOW/
 
@@ -651,7 +650,7 @@ the first 'foo' with 'IT'S A BAR NOW'
 		output / The whole input file after ALTERing: \n/
 		output /:*:whole_input:/
 	}
-	
+
 Give this program the input:
 
  apple
@@ -665,7 +664,7 @@ and you'll get back
  banana
 
 As you can see, we've destructively altered the value of :a_foo: to
-"IT'S A BAR NOW", and this change is reflected in the entire 
+"IT'S A BAR NOW", and this change is reflected in the entire
 input buffer.  (note to students- we really didn't need to rematch
 the :whole_input: twice, but we wanted to drive home the fact that
 this really was a surgical operation on the main text body, not on
@@ -699,8 +698,8 @@ putting the desired values into that variable with the ALTER command.
 Note that the special ISOLATEd behavior of a variable only lasts as
 long as it's not re-assigned by a MATCH.  This is intentional but can
 be the source of some misunderstandings because you can ALTER an
-ISOLATEd value and you can use it's value with :*: and it stays
-ISOLATEd, but if you should bind it in a match, it's ISOLATEed
+ISOLATEd value and you can use its value with :*: and it stays
+ISOLATEd, but if you should bind it in a match, its ISOLATEed
 property is lost.
 
 An ISOLATEd variable is initialized with the value of a zero-length
@@ -779,7 +778,7 @@ Example:
 	window
 	{
 	        output /\n ------INPUT TEST ---/
-	        input (:x:)	
+	        input (:x:)
 	        output /\n Got: \n:*:x: \n/
 	        match [:x:] /foo/
 	        output /\n it had a foo/
@@ -800,14 +799,14 @@ window with the WINDOW statement.  By default, crm114 reads input
 till the first EOF, and then never reads again.  With WINDOW, you
 can read as many times as you want, controlling the input buffer
 size as well. (this is _very_ handy when you're writing a filter
-to monitor an ever-growing syslog file, or sitting on a logging 
+to monitor an ever-growing syslog file, or sitting on a logging
 port that never EOFs).
 
 The WINDOW statement takes one of three flags (see next paragraph),
 and two regex patterns.  It deletes characters in the input window
 buffer up to and including the first regex, then reads standard input
 until it finds the second regex, appending that to the end of the
-input buffer.  Using WINDOW in a loop lets your program inch it's
+input buffer.  Using WINDOW in a loop lets your program inch its
 way through an infinitely long file (and yes, we do mean
 "infinitely".  The program will process the infinitely long input
 file one window's worth at a time. ).
@@ -820,7 +819,7 @@ your input tty is already set to unbuffered operation), bychunk
 checks on every input "block" where a "block" is a conveniently large
 chunk of I/O, and byeof checks only when an EOF is read.
 (don't worry if your input stream is buffered, characters after the
-regex are NOT thrown away but saved for the next execution of a 
+regex are NOT thrown away but saved for the next execution of a
 'window' statement.)
 
 One last bit on WINDOWing - if a WINDOW statement is the first
@@ -840,7 +839,7 @@ output.
 	#! /usr/bin/crm
 	{
 		window <bychar> /\n/ /\n/
-		{ 
+		{
 			match (:my_fruit:) /apple|banana/
 			output /Found fruit: :*:my_fruit: ... good! \n/
 		}
@@ -899,15 +898,15 @@ You can do explicit INPUT of information with the INPUT statement;
 the INPUT statement works as follows:
 
   1) if you don't specify an input filename in square brackets like
-  this 
- 
+  this
+
       [ myfile.txt ]
 
   then input will read from stdin (a clearerr() is done first, so if
-  you've already hit EOF on stdin, you will be able to read past 
+  you've already hit EOF on stdin, you will be able to read past
   that EOF should more input be available.)
 
-  2) if you specify <byline>, only the first line of the input file 
+  2) if you specify <byline>, only the first line of the input file
   is read.
 
 
@@ -924,7 +923,7 @@ database access), or where you need to provide a hard-to-invert
 password check.  (note- because this is only a 32-bit hash, it's
 not particularly secure and should be viewed as a "picket fence",
 rather than as a "bank vault door".  Adding a "salt value" to the
-/slash pattern/ will greatly increase resistance to dictionary 
+/slash pattern/ will greatly increase resistance to dictionary
 attacks.  Putting a randomly chosen dictionary word and number
 in front of the hashed value and another randomly chosen dictionary
 number after the hashed value will greatly increase your security;
@@ -953,11 +952,11 @@ phrase similarity.  As of build 20020501, all phrases of up to four
 words are weighted equally in the classifier, and as of build
 20031215, a better weighting (Bayesian/Markov Modeling) is used to get
 improved accuracy).  Builds past 20040101 use chains of five words
-for yet more accuracy.  
+for yet more accuracy.
 
 The details of all this are explained in the file
 "classify_details.txt", but you don't need to understand them to
-use the classifiers.  
+use the classifiers.
 
 The LEARN statement updates a file of hashed phrase structures with
 the contents of the specified [ ] variable.  If you don't specify an
@@ -998,23 +997,23 @@ statements, where we want one (and only one) of N different
 alternatives to execute?
 
 The ALIUS statement provides this functionality.  "Alius" is latin for
-"other" or "another" (or, more literally "the other man").  
+"other" or "another" (or, more literally "the other man").
 
 An ALIUS statement looks at the most recently completed bracket-block
 of code - if _that_ bracket block failed (exited because a MATCH or
 CLASSIFY failed, or because of a FAIL statement), then ALIUS is a
 no-op and execution continues with the next statement.  If the most
-recently completed bracket block completed successfully (didn't 
+recently completed bracket block completed successfully (didn't
 exit due to a MATCH fail, CLASSIFY fail, or FAIL statement) then
 ALIUS itself is a FAIL statement, and causes a skip to the end of
 the current (outer) bracket block.  This is a skip, not a FAIL, and
 so a surrounding ALIUS on the outer bracket block won't itself FAIL.
- 
+
 
 Here's an example of ALIUS used for a 3-way case statement:
 
  #! /usr/bin/crm
- #   test the alius statement 
+ #   test the alius statement
  {
 	{
 		output /checking for a foo.../
@@ -1043,10 +1042,10 @@ to use ALIUS.
 
 If ALIUS still confuses you, pretend that ALIUS really means
 
-  "IF THAT WORKED, SKIP THE REST OF THIS BLOCK, 
+  "IF THAT WORKED, SKIP THE REST OF THIS BLOCK,
 
       OTHERWISE
-   
+
    TRY THIS NEXT BIT OF CODE AND SEE IF IT WORKS OR NOT"
 
 which is pretty much what it does.
@@ -1054,7 +1053,7 @@ which is pretty much what it does.
 ----- Minion Processes and Syscalls -----
 
 CRM114 has a fairly powerful mechanism for creating and communicating
-with subprocesses, called "minion processes".  
+with subprocesses, called "minion processes".
 
 You can have an unbounded number of minion processes, and minion
 processes can run in parallel with CRM114, repeatedly receiving
@@ -1091,7 +1090,7 @@ window
 	isolate (:catout:)
 	output /\n ----- outputting to a file using cat -----\n/
 	syscall ( This is a cat out \n) (:catout:) /cat > e1.out/
-	output /:*:catout:/  
+	output /:*:catout:/
 	#  note that we expect :catout: to be null
 
 	isolate (:c1: :proc:)
@@ -1111,7 +1110,7 @@ window
 	:async_test_sleeploop:
 	output /--- sleeping 1 seconds ---/
 	syscall <> () () /sleep 1/
-	syscall <keep async> () (:lslaout:) (:proc:) //	
+	syscall <keep async> () (:lslaout:) (:proc:) //
 	output /--- and got this async : \n :*:lslaout: \n ---end-----/
 	{
 		###  if we got at least three chars, we should look for more.
@@ -1125,9 +1124,9 @@ window
 
 ----- INSERTing a file verbatim ------
 
-At some point, you may desire to call a second crm114 program from 
+At some point, you may desire to call a second crm114 program from
 the current program.  There are two ways you can do this: either SYSCALL
-it (as above), or you can INSERT the program text verbatim into your 
+it (as above), or you can INSERT the program text verbatim into your
 current program.  Either works; syscalling keeps the variables and
 data windows of the two programs separate, while INSERT actually makes
 one big program file.
@@ -1135,10 +1134,10 @@ one big program file.
 One issue on INSERT - all INSERTs happen at the very start of program
 setup, during preprocessing, and way before micro-compilation and
 execution, even before the data window gets loaded from standard
-input.  This means that the only variable filenames you can INSERT 
+input.  This means that the only variable filenames you can INSERT
 into your program are those that are defined via command line
-arguments; you can't compute :filename: and then INSERT :*:filename: 
-in your program (the compiler would get very sick if you tried!).  
+arguments; you can't compute :filename: and then INSERT :*:filename:
+in your program (the compiler would get very sick if you tried!).
 But you _can_ SYSCALL if you really need this functionality.
 
 
@@ -1147,7 +1146,7 @@ But you _can_ SYSCALL if you really need this functionality.
 At some point, you may need to do math, or evaluate a mathematical
 expression.  The EVAL statement does this.
 
-EVAL is like ALTER, but instead of evaluating it's arguments left to
+EVAL is like ALTER, but instead of evaluating its arguments left to
 right once, it repeatedly evaluates the arguments until they stop
 changing (EVAL does do a little bit of smart cacheing so that it can
 catch arguments that loop).  EVAL actually keeps a log of the hashes
@@ -1165,13 +1164,13 @@ retained, but two new ones are added:
 	  :@:math_expr:  - evaluates math_expr and returns the numeric
 			   result as a string.
 
-The mathematical expression evaluator can work either in 
+The mathematical expression evaluator can work either in
 algebraic notation (with left-to-right precedence, overridden only
-by parenthesis), or in RPN notation (like an HP calculator).  
+by parenthesis), or in RPN notation (like an HP calculator).
 
-If you use a relational mathematics operator like >, =, or <, 
+If you use a relational mathematics operator like >, =, or <,
 then EVAL itself will evaluate the truth status of that operator,
-putting a 1 or 0 in for true or false, respectively.  
+putting a 1 or 0 in for true or false, respectively.
 After completing the mathematical evaluation and ALTERing the
 result variable (if there is one), EVAL will then do one of
 the following:
@@ -1179,7 +1178,7 @@ the following:
     - if no relational mathematical operator was used, execution
       continues with the next statement.
 
-    - if a relational mathematical operator was used, and the 
+    - if a relational mathematical operator was used, and the
       relation result was TRUE, execution continues with the
       next statement.
 
@@ -1202,8 +1201,8 @@ Here's an example:
 
 which gives you:
 
-  The length of 'foo' is 3 letters  
-  and (2 * 3) + (4 * 5) is 26 
+  The length of 'foo' is 3 letters
+  and (2 * 3) + (4 * 5) is 26
 
 which is as you would expect.
 
@@ -1213,7 +1212,7 @@ CRM114 programs can encounter errors during execution; an error can
 often be "fixed up" and execution continued, or at least the program can
 clean up and exit gracefully.
 
-Whenever an error occurs, it creates a string that describes the 
+Whenever an error occurs, it creates a string that describes the
 problem.  This string is normally printed out as the error message.
 However, it can be used by the program itself to attempt to fix the
 problem before the program itself fails.
@@ -1222,39 +1221,39 @@ The TRAP statement is how a program can catch an error before the
 program fails.  The TRAP will "catch" almost any program error that
 occurs (and all of these conditions are true):
 
-     - inside the bracket-block that holds the TRAP statement, 
+     - inside the bracket-block that holds the TRAP statement,
      - occurs above the trap statement
      - and the error message describing the error is matched by the
        TRAP statement's regex.
 
-If the TRAP statement's regex doesn't match the error message, 
+If the TRAP statement's regex doesn't match the error message,
 then the next TRAP outward will be activated, and the process repeats.
 
 If no TRAP can handle the error, then your program will exit if the
-error was fatal, or print out the error and continue if the error 
+error was fatal, or print out the error and continue if the error
 was just a warning.
 
 If you need to create your own "errors" during a program run, such
 as if you find a file is missing or important data is not properly
-formatted, you can force an error with the error message of your 
+formatted, you can force an error with the error message of your
 choice with the FAULT statement.  The FAULT statement creates the
-fault string you describe, which is still matched against the REGEX 
+fault string you describe, which is still matched against the REGEX
 in each enclosing TRAP.
 
 If you have two TRAPs in series, the first TRAP gets first try at
 matching the FAULT regex, then the second one.
 
 Note that there is no "return from TRAP" - once a trap occurs,
-the trap code must GOTO or otherwise properly resume execution 
+the trap code must GOTO or otherwise properly resume execution
 in an appropriate place.  The reason for this is that many TRAPs
-really aren't "fixable" in the complete sense; the most that can 
+really aren't "fixable" in the complete sense; the most that can
 be done is to issue an error message and exit gracefully.
 
 Additionally, there are some errors that simply aren't recoverable
 in a TRAP.  For example, a fault that occurs during preprocessing
-or inside the microcompiler can't be caught by a TRAP, because the 
-TRAP hasn't been compiled yet.  It's also possible to create a 
-FAULT situation where attempting to read the fault string itself 
+or inside the microcompiler can't be caught by a TRAP, because the
+TRAP hasn't been compiled yet.  It's also possible to create a
+FAULT situation where attempting to read the fault string itself
 causes an error.  In this case, TRAP itself can't function and
 the error just forces a sad error message and CRM114 will terminate
 without grace or honor.
@@ -1311,7 +1310,7 @@ doesn't read any input at all.  It just prints out "Hello, world!"
 
 
 * - file-CATting: to get input from a file rather than from stdin.  The
-easiest way to read in an entire file (of reasonable length) is to 
+easiest way to read in an entire file (of reasonable length) is to
 "cat" the file into an isolated variable.  E.g.:
 
 	...
@@ -1324,21 +1323,21 @@ e.g.:
 
 	...
 	isolate (:some_data: :my_proc:)
-     :loop_here:	
+     :loop_here:
 	syscall <keep> () (:some_data:) (:my_proc:) /cat /var/log/messages/
 	#
 	# do something useful here.
 	#
 	goto :loop_here:
 
-	
+
 If the result can take a long time to produce (say, because it's going
-out over the network to a slow server), then the <async> flag reads only 
+out over the network to a slow server), then the <async> flag reads only
 what is available and returns with that, without waiting for an EOF.
 
 	...
 	isolate (:some_data: :my_proc:)
-     :loop_here:	
+     :loop_here:
 	syscall <async> () (:some_data:) (:my_proc:) / cat /var/log/messages /
 	#
 	# do something useful here.
@@ -1347,30 +1346,30 @@ what is available and returns with that, without waiting for an EOF.
 
 
 
-* - Processes that return more than 256K of text, possibly infinite 
+* - Processes that return more than 256K of text, possibly infinite
 amounts...
 
-Here's a way to cope with processes that return more than 256K of text (the 
+Here's a way to cope with processes that return more than 256K of text (the
 limit for dynamically allocated heap in some kernels is 256K, so that's why
 this artificial limit exists).
 
 This example does an ls -la on /dev, which is usually more than 256K long
 (typically around 350K as of Linux kernel 2.4.18).  Note that "do the
 work" here is to ACCEPT the contents of the data window; we could do
-anything else we wanted instead.  
+anything else we wanted instead.
 
 	window
-	isolate (:p:) 
+	isolate (:p:)
 	{
 		syscall <keep> () (:_dw:) (:p:)  /ls -la  \/dev /
 		#
 		# do the work here...
 		{
 			accept
-		}	
+		}
 		match /.+/
 		liaf
-	} 
+	}
 
 
 The important bits of code here are the syscall to launch the process
@@ -1401,21 +1400,21 @@ bracket-block completed successfully or FAILed out- but ALIUS itself isn't
 a FAIL.   So, you can nest ALIUSed conditionals, like this:
 
   A?
-	A1 
+	A1
 	or A2?
   B?
-	B1 
+	B1
 	or B2?
 
 
 which would look like this:
 
-  { 
+  {
      {
 	match /A/
 	{
-	   {  
- 	      match /A1/    	
+	   {
+ 	      match /A1/
 	      ...
 	   }
            alius
@@ -1429,8 +1428,8 @@ which would look like this:
      {
 	match /B/
 	{
-	   {  
- 	      match /B1/    	
+	   {
+ 	      match /B1/
 	      ...
 	   }
            alius

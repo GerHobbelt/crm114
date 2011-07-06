@@ -1,5 +1,12 @@
-#! /usr/bin/crm 
-#!    this little regression test by Jskud verifies match start/length works
+#! /usr/bin/crm
+#
+#	skudtest.crm - start/length works regression test
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
+#  this little regression test by Jskud verifies match start/length works
 window
 output /:*:_nl: CRM114 testing that start \/ length works in matches :*:_nl: :*:_nl:/
 isolate (:whitelist:)

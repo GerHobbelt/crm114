@@ -1,4 +1,11 @@
 #! /usr/bin/crm
+#
+#	rewritetest.mfp - rewrite test with rewrites.mfp
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 #   Start with some data in the :_dw:

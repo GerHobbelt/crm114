@@ -1,14 +1,18 @@
-//    crm_expr_isolate.c  - isolate a variable (includes mem management)
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_expr_isolate.c  - isolate a variable (includes mem management)
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+
+
+// TODO: looks like the // vs. [] is a copy of ours; double-check in second round.
+
+
+
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -392,6 +396,7 @@ int crm_isolate_this(int *vptr,
         strncpy(vname, &nametext[namestart],
                 ((128 < namelen) ? 128 : namelen));
         vname[128] = 0; /* [i_a] boundary bug */
+		/* ^^^ [i_a] latest Bill as per 2011 uses index [129] here and a size of [130] but that still is a (rather more subtle) error as now you'll get one(1) random byte at the end of variable names longer than 128 characters in his version */
         fatalerror_ex(SRC_LOC(), "You have blown the memory-storage gaskets while trying "
                                  "to store the ISOLATEd variable '%s': memory storage window size "
                                  "is set at %u, call 'crm114 -w' to spacify a larger store instead.\n",

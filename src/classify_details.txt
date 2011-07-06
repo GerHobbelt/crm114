@@ -1,4 +1,9 @@
-	
+#
+#	classify_details.txt - How CRM114's LEARN and CLASSIFY really work.
+#
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 	How CRM114's LEARN and CLASSIFY really work.
 
 This document describes the internal workings of the CRM114 LEARN
@@ -7,7 +12,7 @@ effectively; this is to satisfy the curiosity of those who really
 want deep knowledge of the tools they use.
 
 (NOTE: since CRM114 now has multiple classifiers available, please read
-this whole document.  Some of the classifiers are interoperable, 
+this whole document.  Some of the classifiers are interoperable,
 and some are not.)
 
 The current distribution builds in this set of classifiers.  The
@@ -15,13 +20,13 @@ classifiers are:
 
 1) SBPH Markovian (the default) This is an extension of Bayesian
    classification, mapping features in the input text into a Markov
-   Random Field.  This turns each token in the input into 2^(N-1) 
-   features, which gives high accuracy but at high computation 
-   and memory cost.  (note- you can get plain old Bayesian by 
+   Random Field.  This turns each token in the input into 2^(N-1)
+   features, which gives high accuracy but at high computation
+   and memory cost.  (note- you can get plain old Bayesian by
    specifying the flag  < unigram > )
 
-2) OSB Markovian - This is a version of the Markovian that uses 
-   an orthogonal sparse bigram (OSB) feature set, instead of 
+2) OSB Markovian - This is a version of the Markovian that uses
+   an orthogonal sparse bigram (OSB) feature set, instead of
    the SBPH features.  OSB seems to be neck-and-neck in accuracy
    versus SBPH but it's considerably faster and uses less memory
    for the same amount of detail.  Because OSB Markovian is a subset
@@ -34,7 +39,7 @@ classifiers are:
 3) OSB Winnow - This classifier uses the same feature set as OSB-Markovian
    but doesn't use a probabalistic estimation at all.  Instead, it uses
    the Winnow algorithm.  The data files aren't compatible, although a good
-   hacker could probably come up with a way to get an approximate 
+   hacker could probably come up with a way to get an approximate
    conversion back and forth from the Markovian models.   Like Markovian,
    you can specify < unigram > to get single-word features instead of
    the OSB feature set; this decreases both disk space used and accuracy.
@@ -74,17 +79,17 @@ is always a bad sign.), and more than one phrase can use the same
 word.  You can't change the order of the words, but you _can_ bridge
 across newlines, punctuation, etc. Make all the phrases you can make.
 
-For each phrase you can make, keep track of how many times you 
-see that phrase in both the spam and nonspam categories.  When you 
+For each phrase you can make, keep track of how many times you
+see that phrase in both the spam and nonspam categories.  When you
 need to classify some text, make the phrases, and count up how many times
-all of the phrases appear in the two different categories.  The 
+all of the phrases appear in the two different categories.  The
 category with the most phrase matches wins.
 
 Note that you never have to cross-reference between the two category
 phrase sets.  If a phrase appears in both categories an equal number
-of times, then both categories get an equal score boost.  Since 
+of times, then both categories get an equal score boost.  Since
 an equal score boost doesn't change which category will win, there's
-no need to cross-reference category phrase counts.  
+no need to cross-reference category phrase counts.
 
 NB: This process is called "sparse binary polynomial hashing" because
 it uses a set of polynomials to generate a hash-of-hashes; sparse because not
@@ -93,9 +98,9 @@ changing coefficient terms are always either 0 or 1, and a hash
 because, well, it's a hash.  :)
 
 Instead of simply comparing raw count scores, we do a Bayesian
-chain-rule to calculate the probability of "good" versus "evil".  
+chain-rule to calculate the probability of "good" versus "evil".
 (CRM114 actually has no knowledge of spam and nonspam, just two
-sets of user-defined classes that can be whatever you want to be.  
+sets of user-defined classes that can be whatever you want to be.
 This explanation will use 'spam' and 'nonspam', but internally, it's
 just "these statistics files here" and "those statistics files there")
 
@@ -122,7 +127,7 @@ We repeatedy form a feature with the polynomials, check the .css files
 to see what the counts of that feature are for spam and nonspam, and
 use the counts to calculate P(A|S) and P(A|NS) [remember, we correct
 for the fact that we may have different total counts in the spam and
-nonspam categories]. 
+nonspam categories].
 
 We also bound P(A|S) and P(A|NS) to prevent any 0.0 or 1.0
 probabilities from saturating the system.  If you allow even _one_ 0.0
@@ -131,7 +136,7 @@ even in the face of overwhelming evidence to the contrary.  The
 actual bound in use depends on the total number of counts of the
 feature A ever encountered, irrespective of their good/evil nature.
 
-[additional note: versions from 20030630 to 20031200 used a 
+[additional note: versions from 20030630 to 20031200 used a
 fairly gentle method to generate the local probabilities from
 the relative hit counts.  From 20031200 onward, this local probability
 was modified by the number and sequence of the terms of the
@@ -140,7 +145,7 @@ model a Markov chain; polynomials that have a longer chain length
 (and therefore a closer match) get a significantly higher boost.]
 
 Once we have P(A|S) and P(A|NS), we can calculate the new P(S) and
-P(NS).  Then we get the next feature out of the polynomial hash 
+P(NS).  Then we get the next feature out of the polynomial hash
 pipeline (each extra word makes 15 features) and repeat until we hit
 the end of the text.  Whichever set has the greater probability wins.
 
@@ -156,11 +161,11 @@ Now, on to the brutish details for the Markovian classifier:
 In terms of the actual implementation, LEARN and CLASSIFY are
 pipelined operations.  The pipeline has these stages (as of the
 2002-10-21 version) :
-	
+
 1) Tokenization.  The input text is tokenized with the supplied regex
    (usually [[:graph:]]+ ) into a series of disjointed word tokens.
 
-2) Each word token is hashed separately.  The hash used is a "fast hash", 
+2) Each word token is hashed separately.  The hash used is a "fast hash",
    not particularly secure, but with reasonably good statistics.
 
 3) Each hash is pushed into the end of a five-stage pipeline.  Each
@@ -195,8 +200,8 @@ pipelined operations.  The pipeline has these stages (as of the
   (yes, it's like counting in binary, but the low-order bit is always
   turned on so that the low order bits in the polynomial result is always
   affected by all nonzero elements of the hash pipeline.  "skipped"
-  words have a coefficient of zero, that zeroes their effect on the 
-  output of that polynomial, "skipping" the word)  
+  words have a coefficient of zero, that zeroes their effect on the
+  output of that polynomial, "skipping" the word)
 
 6) These 16 results (call them "superhashes") reflect all phrases up to
    length 5 found in the input text.  Each is 32 bits long.
@@ -235,19 +240,19 @@ pipelined operations.  The pipeline has these stages (as of the
 There you have it.  Previous polynomial sets (using only H0 thorugh H3 of
 the hash pipeline, with prime-number coefficients) have reached over
 99.87% accuracy.   The best that the 5-stage pipeline
-has reached for me is 99.984%, and it averages around 99.95% 
+has reached for me is 99.984%, and it averages around 99.95%
 accuracy over months and months of use.
 
 n.b. slight error in edge effects - right now, we don't execute the
-pipeline polynomial set until the pipeline is full; conversely we stop 
-executing the polynomial set when we run out of tokens.  This means 
-that we don't give the first and last few tokens of the email the full 
+pipeline polynomial set until the pipeline is full; conversely we stop
+executing the polynomial set when we run out of tokens.  This means
+that we don't give the first and last few tokens of the email the full
 treatment; that's a bug that should be rectified.  The other side of the
 problem is that filling and flushing the pipe gives worse results
 by putting too much emphasis on "zero hash" and too much emphasis
 on the first and last few words.
 
-n.b.: Arne's Optimization:  If the singleton word (H0 alone) doesn't 
+n.b.: Arne's Optimization:  If the singleton word (H0 alone) doesn't
 appear or has a count of 0, then it's useless to check for any further
 combinations, as you know they can't appear unless H0 also appeared.
 This speedup gives you about 2x speed improvement.
@@ -259,10 +264,10 @@ In releaes after Nov 1 2002, instead of just comparing counts, we do
 the true Bayesian chain rule to calculate the probabilities of pass
 versus fail.  The bounding limits are first to bound within
 
-   [ 1/featurecount+2 , 1 - 1/featurecount+2].  
-   
+   [ 1/featurecount+2 , 1 - 1/featurecount+2].
+
 and then to add further uncertainty to that bound additionally by a
-factor of 1/(featurecount+1).  
+factor of 1/(featurecount+1).
 
 We do the chain rule calculation and then we clip the minimum
 probability to MINDOUBLE, which is host specific but is a VERY small
@@ -275,8 +280,8 @@ the greater of the two probabilities.  For example, 1.0 - (10^-30) is
 exactly equal to 1.00000; yet 10^-30 is easily achieveable in the
 first ten lines of text.  Therefore, we calculate the chainrule
 probabilities twice, using P(S) and P(NS) separately, and then use the
-smaller one to recompute the larger one.  Thus, even if there's 
-arithmetic underflow in computing the larger probability, we still 
+smaller one to recompute the larger one.  Thus, even if there's
+arithmetic underflow in computing the larger probability, we still
 retain the full information in the smaller probability.
 
 
@@ -285,10 +290,10 @@ retain the full information in the smaller probability.
 
 ---  Yet More Details - for Post-200310xx Versions ----
 
-During the summer and fall of 2003, I continued experimenting with 
+During the summer and fall of 2003, I continued experimenting with
 improvements to SBPH/BCR as described above.  It became clear that
 SBPH/BCR was _very_ good, but that it was still operating within the
-limits of a linear classifier without hidden levels- e.g. it was 
+limits of a linear classifier without hidden levels- e.g. it was
 a perceptron (with all of the limitations that perceptron-based
 classifiers have).
 
@@ -298,11 +303,11 @@ I tested a 5th order Markovian classifier, and found that it was
 superior to any other classifier I had tried.
 
 A Markovian classifier operates on the concept that _patterns_ of
-words are far more important than individual words.  
+words are far more important than individual words.
 
 For example, a Bayesian encountering the phrase "the quick brown fox
 jumped" would have five features: "the", "quick", "brown", "fox", and
-"jumped".  
+"jumped".
 
 A Sparse Binary Polynomial Hasher would have sixteen features:
 
@@ -319,9 +324,9 @@ A Sparse Binary Polynomial Hasher would have sixteen features:
 weighting in the Bayesian chain rule above.
 
 The change to become a Markovian is simple- instead of giving each
-Sparse Binary Polynomial Hash (SBPH) feature a weight of 1, give each 
+Sparse Binary Polynomial Hash (SBPH) feature a weight of 1, give each
 feature a weight corresponding to how long a Markov Chain it matches
-in either of the archetype texts.  
+in either of the archetype texts.
 
 A simple way to do this would be to make the weight equal to the number
 of words matched - in this case the weights would be:
@@ -361,7 +366,7 @@ superincreasing filter, the weights:
 will give the desired results.
 
 For convenience in calculation, CRM114 uses the superincreasing
-weights defined by the series 2^(2n)- that is, 
+weights defined by the series 2^(2n)- that is,
 
  the				1
  the quick			4
@@ -382,7 +387,7 @@ and so users don't have to re-start their training.
 
 This Markovian matching gives a considerable increase in accuracy
 over SBPH matching, and almost a factor of 2 improvement over Bayesian
-matching.  It is now the default matching system in CRM114 as of 
+matching.  It is now the default matching system in CRM114 as of
 version 200310xx.
 
 --------------------------------------------------------
@@ -412,11 +417,11 @@ Winnow is a different way of classifying; it doesn't generate
 probabilities but rather weights.  The version in CRM114 at this
 particular time uses the OSB feature set.  Christian Siefkes, Shalendra
 Chhabra, and Laird Breyer did the first hacking on this, then with
-Fidelis Assis' OSB feature generator it really took off. 
+Fidelis Assis' OSB feature generator it really took off.
 
 Here's a quick synopsys of the algorithm:
 
-1) Every possible feature, from AAAA to ZZZZZZZ, starts with 
+1) Every possible feature, from AAAA to ZZZZZZZ, starts with
 a weight of 1.000000 (note, we only record weights that _aren't_
 1.000000; so if we don't find a feature in our feature list, we
 can assume it has a value of 1.0000).
@@ -424,12 +429,12 @@ can assume it has a value of 1.0000).
 2) To learn, we do these steps in order:
    - generate all of the OSB features in the example text
    - delete all duplicate features
-   - if the example is an example "in the class", multiply every 
+   - if the example is an example "in the class", multiply every
      found feature's weight by the "Promotion Constant", which
      is empirically set at 1.23
    - if the example is a text that is NOT supposed to be "in the class",
      we multiply each found feature's weight by the "Demotion
-     Constant", which is empirically set at .83 
+     Constant", which is empirically set at .83
     (note that no matter how many times a feature appears in
     a particular example, it only gets promoted or demoted ONCE).
 
@@ -437,12 +442,12 @@ can assume it has a value of 1.0000).
    - generate all of the OSB features in the unknown text
    - delete all duplicate features
    - add up all of the weights of these features in each
-     of the statistics files.  (don't forget that any 
-     feature that doesn't exist in the stats file gets a 
+     of the statistics files.  (don't forget that any
+     feature that doesn't exist in the stats file gets a
      default value of 1.00000 !)
-   - The score of each file is the total weight accumulated 
+   - The score of each file is the total weight accumulated
      by the per-features, divided by the total number of features.
-     (note that since not-seen-before features score 1.0000, a 
+     (note that since not-seen-before features score 1.0000, a
      totally inconclusive score is Nfeatures/Nfeatures = 1.0000)
    - The file with the highest score wins.
 
@@ -451,11 +456,11 @@ you train not just on error, but rather in this less subtle way:
 
     If the _correct_ class didn't score at least "Thickness" above
     the decision threshold (in pR, the decision threshold is 0.0)
-    then train the _correct_ class with the example text in 
+    then train the _correct_ class with the example text in
     correct (promotion) mode.
 
     If the _incorrect_ class didn't score at least "Thickness"
-    below the decision threshold ( again, in pR units), then 
+    below the decision threshold ( again, in pR units), then
     train the incorrect class in error (demotion) mode.  This
     is done with the < refute > flag.
 
@@ -568,7 +573,7 @@ to be assured by the 1/r^2 falloff.
 The actual location in hyperspace of each document is determined
 by the features it contains.  More precisely, each of the 2^32
 dimensions of a document is determined by the following rule:
- 
+
    "The coordinate of a document in a particular dimension of the
     hyperspace is equal to the number of times a feature appears in
     that document such that the feature hashes to the index of that
@@ -583,9 +588,9 @@ rare circumstance that more than one feature hashes to the same 32-bit
 hyperspace dimension index, the distance of 2 along that dimension is
 represented by having two copies of that dimension index in the
 dimension list; a distance of three being represented by three copies,
-and so on.  
+and so on.
 
-The hashed feature values of the unknown document are sorted after 
+The hashed feature values of the unknown document are sorted after
 generation; the known document feature hash values are stored in pre-sorted
 form.  This means a single two-index pass, similar to a merge-sort,
 can quickly find all features that existed only in one document, that
@@ -658,7 +663,7 @@ As a third improvement (which is portable to other classifiers doing
 feature lookup of any type) is to generate the document's features in
 one phase, then sort those features in the next phase in such a way as
 to maximize cache coherence (ideally, this means knowing the actual
-layout of the backing storage system) and then performing the actual 
+layout of the backing storage system) and then performing the actual
 feature database lookups in a third phase.  This may have a significant
 impact on the overall system speed.
 
@@ -678,14 +683,14 @@ character-at-a-time compression, and used large amounts of memory -
 typically multiple 0.5 gigabyte chunks.  The CRM114 implementation is
 totally new code and instead works on the "bit at a time" principle;
 each bit in the incoming message is treated as a separate symbol for
-the purpose of classification.   Thus, there is no need for a 
+the purpose of classification.   Thus, there is no need for a
 tokenization or feature generation step; the features are the
 incoming stream of zeroes and ones.
 
-The result is a classifier that is comparable in speed to OSB but 
-needs no tokenization; the downside is that it has a fairly large 
+The result is a classifier that is comparable in speed to OSB but
+needs no tokenization; the downside is that it has a fairly large
 memory footprint. (36 megabytes for a million-node statistics
-file, versus 6 megabytes for an OSB system.).  
+file, versus 6 megabytes for an OSB system.).
 
 Additionally, the creation of an optimal incrementally-taught
 compression algorithm is nontrivial.  Typical optimal compression is
@@ -693,7 +698,7 @@ done with a Markov model, however the reader has to be aware that this
 is not the same as the "Markov" classifier described above (which is
 better described as a Markov Random Field representing a hidden Markov
 model of the text, rather than a bit-serial Markov chain as used for
-bit-entropy classification).  
+bit-entropy classification).
 
 There are two methods used to construct the bit-entropy Markov chain:
 one where an initial assumption of the chain is made, and one where it
@@ -745,7 +750,7 @@ of the chain.  You can do that by zapping out low-valued (not very
 significant) slots, but that means old, stale, but originally high-valued
 slots never expire.  Another method would be to use an LRS (Least
 Recently Seen) tracking system, but that would use up a lot more
-disk space for the .css/.cow files- almost doubling it is the 
+disk space for the .css/.cow files- almost doubling it is the
 best estimate I have.
 
 "Microgrooming" adds a random factor.  A feature is microgroomed

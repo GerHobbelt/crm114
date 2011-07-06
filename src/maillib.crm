@@ -1,10 +1,9 @@
-# maillib.crm - handy library for mail whacking - wsy 2006
+#! /usr/bin/crm
 #
-# Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
-# GNU Public License (GPL) version 2.  A copy of this license is included
-# in the distribution media, or obtain one from www.fsf.org .
-#
+#	maillib.crm - handy library for mail whacking
 
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 
 ##########################################################
 #
@@ -550,7 +549,7 @@ return
     # [i_a]
     # Now doesn't replacing the next one screw up mail reader
     # conversation trees by appending to the Message-Id to the
-    # message? (mail readers might not like altered Mesage-Id's...)
+    # message? (mail readers might not like altered Message-Id's...)
     call /:mungmail_add_comment:/ [Message-Id: sfid-:*:cid:]
 }
 return

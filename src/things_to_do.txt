@@ -1,6 +1,10 @@
-        Things To Do in CRM114 (rough priority list)
+#
+#	things_to_do.txt - Things To Do in CRM114 (rough priority list)
+#
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 
-
+		Things To Do in CRM114 (rough priority list)
 
 1) redirect OUTPUT  (DONE!)  "output <flags> (filename) /interp_val/
 

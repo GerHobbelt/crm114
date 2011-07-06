@@ -1,26 +1,33 @@
 #! /usr/bin/crm
+#
+#	alternating_example_neural.crm - Alternating Example Neural
+#					 Network Classifier training test
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 {
-	output / Alternating Example Neural Network Classifier TRAINING \n/
+	output /**** Alternating Example Neural Network Classifier TRAINING\n/
 #   load the files in
-	isolate (:intro: :quickref:)
-	input (:intro:) [ INTRO_mt_ng_reference_2.input 0 32000]
-	input (:quick:) [ QUICKREF_mt_ng_reference_1.input 0 32000]
+	isolate (:Macbeth: :Alice:)
+	input (:Macbeth:) [ Macbeth_Act_IV.txt 0 16000]
+	input (:Alice:) [ Alice_In_Wonderland_Chap_1_And_2.txt 0 16000]
 
 #    Now loop.
      isolate (:loopcontrol:) //
      isolate (:loopcounter:) /0/
-     { 
+     {
         eval (:loopcounter:) / :@: :*:loopcounter: + 1 : /
         #        output /Top of loop at :*:loopcounter: \n/
 	match [:loopcontrol:] <absent> /./
 	{
 		{
-		#         Grab a good chunk of intro...
-			match <fromend> (:onep:) /(....){255}.*?\n/ [:intro:]
+		#         Grab a good chunk of Macbeth...
+			match <fromend> (:onep:) /(....){255}.*?\n/ [:Macbeth:]
 			match [:onep:] /.../
-			learn [:onep:] < neural unigram append> (i_test.css)
-			learn [:onep:] < neural unigram refute append> (q_test.css)
+			learn [:onep:] < neural unigram append> (m_test.css)
+			learn [:onep:] < neural unigram refute append> (a_test.css)
 		}
 		alius  #  Set done mark
 		{
@@ -29,13 +36,13 @@ window
 	}
 	{
 		{
-			#         Grab a good chunk of quickref...
-			match <fromend> (:twop:) /(....){255}.*?\n/ [:quick:]
+			#         Grab a good chunk of Alice...
+			match <fromend> (:twop:) /(....){255}.*?\n/ [:Alice:]
 			match [:twop:] /.../
-			learn [:twop:] < neural unigram append> (q_test.css)
-			learn [:twop:] < neural unigram refute append> (i_test.css)
+			learn [:twop:] < neural unigram append> (a_test.css)
+			learn [:twop:] < neural unigram refute append> (m_test.css)
 		}
-		alius     #  reset to start of intro file.
+		alius     #  reset to start of Macbeth file.
 		{
 			alter (:loopcontrol:) /X/
 		}
@@ -43,8 +50,8 @@ window
 	liaf
      }
      #   Now run one fromstart loop on each of the files
-     learn [:_nl:] <neural fromstart bychunk> (i_test.css)
-     learn [:_nl:] <neural fromstart bychunk> (q_test.css)
+     learn [:_nl:] <neural fromstart bychunk> (m_test.css)
+     learn [:_nl:] <neural fromstart bychunk> (a_test.css)
 }
 
 output /\n**** Alternating Example Neural Network Classifier RUNNING TEST\n/
@@ -52,27 +59,26 @@ output /\n**** Alternating Example Neural Network Classifier RUNNING TEST\n/
 isolate (:s:)
 isolate (:filetxt:) //
 
-{ 
-  input (:filetxt:) [ QUICKREF_mt_ng_reference_1.input 32000 4096 ]
-  match (:t1:) [:filetxt:] /(....){255}.*?\n\n/ 
+{
+  input (:filetxt:) [ Alice_In_Wonderland_Chap_1_And_2.txt 16000 4096 ]
+  match (:t1:) [:filetxt:] /(....){255}.*?\n\n/
   {
-    classify < neural unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ [:t1:] 
-    output / type I \n:*:s:\n/
-  } 
-  alius 
-  { output / type Q \n:*:s:\n/ } 
+    classify < neural unigram> ( m_test.css | a_test.css ) (:s:)/[[:graph:]]+/ [:t1:]
+    output / type M \n:*:s:\n/
+  }
+  alius
+  { output / type A \n:*:s:\n/ }
 }
 
-{ 
+{
   isolate (:t2:) //
-  input (:filetxt:) [ INTRO_mt_ng_reference_2.input 32000 4096 ]
-  match (:t2:) [:filetxt:] /(....){255}.*?\n/ 
+  input (:filetxt:) [ Macbeth_Act_IV.txt 16000 4096 ]
+  match (:t2:) [:filetxt:] /(....){255}.*?\n/
 
   {
-    classify < neural unigram > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ [:t2:]
-    output / type I \n:*:s:\n/
-  } 
-  alius 
-  { output / type Q \n:*:s:\n/ }
+    classify < neural unigram > ( m_test.css | a_test.css ) (:s:) /[[:graph:]]+/ [:t2:]
+    output / type M \n:*:s:\n/
+  }
+  alius
+  { output / type A \n:*:s:\n/ }
 }
-

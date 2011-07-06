@@ -1,25 +1,12 @@
 ;;; crm114-mode.el --- major mode for editing crm114 scripts
 
 ;; Copyright (C) 2005  Haavard Kvaalen <havardk@kvaalen.no>
-
+;; This file is under GPLv3, as described in COPYING.
+;;
 ;; Keywords: languages
-
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2 of the
-;; License, or (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, write to the Free Software
-;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
+;;
 ;;    To automatically invoke this mode whenever you edit a .crm file,
-;;    make sure crm114-mode.el is in your site's default .el directory, 
+;;    make sure crm114-mode.el is in your site's default .el directory,
 ;;    and add the following to your .emacs file in your home directory
 ;;    without the ';;' commenting in front, of course!
 ;;
@@ -29,7 +16,7 @@
 ;;
 ;; $Revision: 1.7 $
 
-(defvar crm114-indent-level 4 
+(defvar crm114-indent-level 4
   "Indentation of blocks")
 
 (defvar crm114-mode-syntax-table
@@ -71,10 +58,10 @@
 (defvar crm114-font-lock-keywords
   (list
    ;; goto labels
-   '("\\(^\\|;\\)\\s-*:\\(\\(:?\\sw\\|\\s_\\)+\\):\\s-*\\($\\|;\\|#\\)" 
+   '("\\(^\\|;\\)\\s-*:\\(\\(:?\\sw\\|\\s_\\)+\\):\\s-*\\($\\|;\\|#\\)"
      2 'font-lock-constant-face nil)
    ;; functions
-   '("\\(^\\|;\\)\\s-*:\\(\\(:?\\sw\\|\\s_\\)+\\):\\s-*(" 
+   '("\\(^\\|;\\)\\s-*:\\(\\(:?\\sw\\|\\s_\\)+\\):\\s-*("
      2 'font-lock-function-name-face nil)
    ;; variables
    '("\\(:\\*\\)?:\\([^: \t\n]+\\):" 2 'font-lock-variable-name-face nil)
@@ -93,8 +80,8 @@
   (list
    ;; '#' and '/' are allowed within variable names so we need to
    ;; change their syntax at those places.
-   '(":[#@]:[^ \t\n]*:\\|:[^: \t\n]*:" 
-     ("#\\|/" 
+   '(":[#@]:[^ \t\n]*:\\|:[^: \t\n]*:"
+     ("#\\|/"
       (progn
 	(goto-char (match-beginning 0))
 	(setq crm114-end-syntactic (match-end 0)))
@@ -135,7 +122,7 @@
 	 (while (and (re-search-forward search-string end t)
 		     (cond ((match-beginning 1) ; comment
 			    (re-search-forward "\\\\#" end t))
-			   ((match-beginning 2) ; string 
+			   ((match-beginning 2) ; string
 			    ;; The extra paranthesis are here to work
 			    ;; around what seems to be a bug seen on
 			    ;; xemacs 21.4.6 (on debian)
@@ -234,10 +221,10 @@
 			       t)))))
 	(goto-char pos)))))
 
-		  
+
 
 (defun crm114-mode ()
-  "Major mode for editing crm scripts.  
+  "Major mode for editing crm scripts.
 
 CRM114, also known as The Controllable Regex Mutilator is a language
 designed for implementation of contextual filters.
@@ -251,8 +238,8 @@ Turning on crm114 mode runs `crm114-mode-hook'."
   (set-syntax-table crm114-mode-syntax-table)
   (make-local-variable 'indent-line-function)
   (setq indent-line-function 'crm114-indent-line)
-  (setq font-lock-defaults 
-	'(crm114-font-lock-keywords 
+  (setq font-lock-defaults
+	'(crm114-font-lock-keywords
 	  nil nil nil
 	  crm114-beginning-of-syntax
 	  (font-lock-syntactic-keywords . crm114-font-lock-syntactic-keywords)))

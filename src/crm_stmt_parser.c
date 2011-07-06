@@ -1,14 +1,8 @@
-//  crm_stmt_parser.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_preprocessor.c  - statement preprocessor utilities
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -72,6 +66,8 @@ static const FLAG_DEF crm_flags[] =
     { "svm", CRM_SVM },
     { "fscm", CRM_FSCM },
     { "neural", CRM_NEURAL_NET },
+    { "erase", CRM_ERASE },
+    { "pca", CRM_PCA },
     { "auto", CRM_AUTODETECT },
     { "autodetect", CRM_AUTODETECT },
     { "alt.markovian", CRM_ALT_MARKOVIAN },

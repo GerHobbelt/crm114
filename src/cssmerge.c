@@ -1,12 +1,7 @@
-//  cssmerge.c - utility for merging one css file onto another
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 1.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	cssmerge.c - utility for merging one css file onto another
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 //  include some standard files
 
@@ -160,7 +155,7 @@ int main(int argc, char **argv)
     int sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
 
     struct stat statbuf;                    //  filestat buffer
-    FEATUREBUCKET_TYPE *h1, *h2;            //  the text of the hash file
+    FEATUREBUCKET_STRUCT *h1, *h2;            //  the text of the hash file
 
     int opt;
 
@@ -302,7 +297,7 @@ int main(int argc, char **argv)
 
             // fputc(0, f);/* [i_a] fprintf(f, "%c", 0); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
             if (file_memset(f, 0,
-                            sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+                            sparse_spectrum_file_length * sizeof(FEATUREBUCKET_STRUCT)))
             {
                 untrappableerror_ex(SRC_LOC(),
                                     "\n Couldn't write to file %s; errno=%d(%s)\n",
@@ -332,11 +327,11 @@ int main(int argc, char **argv)
     }
 
     //
-    hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
+    hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_STRUCT);
     fprintf(stderr, "\nOutput sparse spectra file %s has %d bins total\n",
             argv[optind], hfsize1);
 
-    hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
+    hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_STRUCT);
     fprintf(stderr, "\nInput sparse spectra file %s has %d bins total\n",
             argv[optind + 1], hfsize2);
 

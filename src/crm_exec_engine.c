@@ -1,14 +1,8 @@
-//  crm_exec_engine.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_exec_engine.c - core of CRM114, execution engine toplevel
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -284,7 +278,7 @@ invoke_top:
             fl = crm_get_pgm_arg(flagz, MAX_PATTERN, apb->a1start, apb->a1len);
             fl = crm_nexpandvar(flagz, fl, MAX_PATTERN, vht, tdw);
             //    fprintf(stderr,
-            //           "flagz --%s-- len %d\n", flagz, strlen(flagz));
+            //           "flagz --%s-- len %d\n", flagz, (int)strlen(flagz));
             apb->sflags = crm_flagparse(flagz, fl, csl->mct[csl->cstmt]->stmt_def);
         }
         break;

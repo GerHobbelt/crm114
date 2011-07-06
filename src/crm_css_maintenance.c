@@ -1,14 +1,8 @@
-//  crm_css_maintenance_.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_css_maintenance.c  - migrogrooming utilities
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,7 +15,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-static int crm_zapcss(FEATUREBUCKET_TYPE *h,
+static int crm_zapcss(FEATUREBUCKET_STRUCT *h,
         unsigned int hs,
         unsigned int start,
         unsigned int end);
@@ -42,7 +36,7 @@ static int crm_zapcss(FEATUREBUCKET_TYPE *h,
 //     how the file looks, and if necessary, we get rid of some data.
 //     R is the "MICROGROOM_RESCALE_FACTOR"
 //
-int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
+int crm_microgroom(FEATUREBUCKET_STRUCT *h, unsigned char *seen_features,
         int hs, unsigned int hindex)
 {
     int i, j, k;
@@ -254,7 +248,7 @@ int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 //
 //      crm_zapcss - the distance-heuristic microgroomer core.
 
-static int crm_zapcss(FEATUREBUCKET_TYPE *h,
+static int crm_zapcss(FEATUREBUCKET_STRUCT *h,
         unsigned int hs,
         unsigned int start,
         unsigned int end)
@@ -326,7 +320,7 @@ static int crm_zapcss(FEATUREBUCKET_TYPE *h,
     return actually_zeroed;
 }
 
-void crm_packcss(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
+void crm_packcss(FEATUREBUCKET_STRUCT *h, unsigned char *seen_features,
         int hs, int packstart, int packlen)
 {
     //    How we pack...
@@ -353,7 +347,7 @@ void crm_packcss(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
     }
 }
 
-void crm_packseg(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
+void crm_packseg(FEATUREBUCKET_STRUCT *h, unsigned char *seen_features,
         int hs, int packstart, int packlen)
 {
     unsigned int ifrom, ito;

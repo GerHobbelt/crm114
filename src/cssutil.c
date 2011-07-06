@@ -1,12 +1,7 @@
-//  cssutil.c - utility for munging css files, version X0.1
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	cssutil.c - utility for munging css files, version X0.1
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 //  include some standard files
 
@@ -209,7 +204,7 @@ int main(int argc, char **argv)
 
     {
         struct stat statbuf;        //  filestat buffer
-        FEATUREBUCKET_TYPE *hashes; //  the text of the hash file
+        FEATUREBUCKET_STRUCT *hashes; //  the text of the hash file
 
         // parse cmdline options
         while ((opt = getopt(argc, argv, "bDhR:rqs:S:vtT")) != -1)

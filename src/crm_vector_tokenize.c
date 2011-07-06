@@ -1,14 +1,18 @@
-//  crm_str_funcs.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2009  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_vector_tokenize.c  - vectorized tokening to create 32-bit hash output
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+
+// TODO   merge for real!
+
+
+
+
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -4631,6 +4635,20 @@ int crm_vector_tokenize_selector
         hash_iters0 = pipe_iters;
         hash_iters1 = pipe_iters;
     }
+
+  //    Final bit - did the user specify <nocase> or <nomultiline> or
+  //    <literal> or any other match flags?  Yes, it's madness to use
+  //    <literal> in a vector tokenization (and easier to do \Q and \U
+  //    in that case anyway) but we support it in case someone ever uses
+  //    vector tokenization in a way that it isn't madness to use <literal>
+
+  my_regex_cflags = REG_EXTENDED;
+  if (classifier_flags & CRM_NOCASE)
+    my_regex_cflags += REG_ICASE;
+  if (classifier_flags & CRM_NOMULTILINE)
+    my_regex_cflags += REG_NEWLINE;
+  if (classifier_flags & CRM_LITERAL)
+    my_regex_cflags += REG_LITERAL;
 
     //    We now have our parameters all set, and we can run the vector hashing.
     //

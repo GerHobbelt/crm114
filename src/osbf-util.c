@@ -1,18 +1,14 @@
-//  osbf-util.c - utility for munging css files, version X0.1
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	osbf-util.c - utility for munging css files, version X0.1
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2004-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  OBS: This program is a modified version of the original cssutil,
 //       specific for the new osbf format. It is not compatible with
 //       the original css format. -- Fidelis Assis
-//
-//  include some standard files
 
+//  include some standard files
 #include "crm114_sysincludes.h"
 
 //  include any local crm114 configuration file

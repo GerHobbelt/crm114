@@ -1,14 +1,8 @@
-//  crm114_compiler.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm114_compiler.c - CRM114 microcompiler
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -111,7 +105,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_REFUTE | CRM_APPEND | CRM_ABSENT
+      | CRM_REFUTE | CRM_ERASE | CRM_APPEND | CRM_ABSENT
       | CRM_NEURAL_NET | CRM_MARKOVIAN | CRM_FROMSTART
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL

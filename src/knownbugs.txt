@@ -1,3 +1,9 @@
+#
+#	knownbugs.txt - CRM114 Known Bugs
+#
+# Copyright 2001-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
     CRM114 Known Bugs:
 
 1) (fixed)
@@ -93,4 +99,4 @@ Patches appreciated on this one too.
 
     Let me know if you find any others!
 
-    -Bill Y.
+                                                               -Bill Y.

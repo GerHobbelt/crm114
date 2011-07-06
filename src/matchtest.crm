@@ -1,5 +1,10 @@
-#!  /usr/bin/crm 
+#! /usr/bin/crm
 #
+#	matchtest.crm - test matching functionality of CRM114
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #   this program exercises the matching functionality of crm.  It expects
 #   an input that may contain foo*, bar*, and possibly START baz END
 window
@@ -16,13 +21,13 @@ output /:*:_nl:  CRM114 testing match functionality :*:_nl:/
 	match <> (:x:) /foo/
 	output / found exact match on ':*:x:'/
 }
-{    
+{
 	window /ZZZ/ /ZZZ/
 	output /:*:_nl:Testing absent match on foo.../
 	match <absent> () /foo/
 	output / match says "no foo found"./
 }
-{    
+{
 	window /ZZZ/ /ZZZ/
 	output /:*:_nl:Testing absent match on foo.../
 	match <absent> () /foo/
@@ -289,7 +294,7 @@ output /:*:_nl:  CRM114 testing match functionality :*:_nl:/
 {
 	{
 		output /testing <absent> versus binding  (the '67' bug)\n /
-		output / The next stmt --- SHOULD--- get an error message! \n / 
+		output / The next stmt --- SHOULD--- get an error message! \n /
 		match <absent> (:incognita:) /nothinjkljiejfksn;s94jf94msks/
 		output / Bug!  You should never see this line! \n/
 	}

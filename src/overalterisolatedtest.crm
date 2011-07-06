@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	overalterisolatedtest.crm  - CRM114 testing ALTERation and copying
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 {
 	output /:*:_nl:   CRM114 testing ALTERation and copying :*:_nl::*:_nl:/
@@ -43,7 +49,7 @@ window
 	output /:*:_nl:----------------------:*:_nl:/
 	output / :q: = :*:q: :*:_nl:/
 	output /  ISOLATEing :q: - this should copy :*:_nl:/
-	isolate (:q:) 
+	isolate (:q:)
 	output / :q: = :*:q: :*:_nl:/
 	output /  ALTERing :q: to ZZZZZ:*:_nl:/
 	alter (:q:) /ZZZZZ/

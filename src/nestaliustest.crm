@@ -1,8 +1,14 @@
 #! /usr/bin/crm
-#   test the alius statement 
+#
+#	nestaliustest.crm - test nesting of alias statements
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#   test the alius statement
 {
 	{
-		{	
+		{
 			output /checking for a foo.../
 			match /foo/
 			output /Found a foo :*:_nl:/
@@ -30,7 +36,7 @@
 			match /wugga/
 			output /Found a wugga.  :*:_nl:/
 		}
-		alius 
+		alius
 		output /found neither :*:_nl:/
 	}
 }

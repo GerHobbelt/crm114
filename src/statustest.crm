@@ -1,4 +1,11 @@
 #! /usr/bin/crm
+#
+#	statustest.crm - CRM114 testing outcall and status codes
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 window
 output /:*:_nl: CRM114 testing outcall and status codes :*:_nl:/
 {

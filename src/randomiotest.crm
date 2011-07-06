@@ -1,4 +1,10 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
+#
+#	reandomiotest.crm - random I/O test
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
 #
 #    Random I/O test - test lseeking I/O
 #

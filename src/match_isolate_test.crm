@@ -1,5 +1,10 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
+#	match_isolate_test.crm - test match/isolate memory reclamation
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #        Program to test match/isolate memory reclamation
 #
 {

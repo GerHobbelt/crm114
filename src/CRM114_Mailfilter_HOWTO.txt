@@ -1,11 +1,17 @@
+#
+#	CRM114_Mailfilter_HOWTO.txt - The CRM114 & Mailfilter HOWTO
+#
+# Copyright 2003-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
 		The CRM114 & Mailfilter HOWTO
 
 		    -Bill Yerazunis, 2003-09-18
-			(last update 2007-01-01)
+			(last update 2009-03-02)
 
 
-This is the CRM114 Mailfilter HOWTO.  It describes how to set up CRM114 
-and Mailfilter to filter your incoming mail, as of the version 
+This is the CRM114 Mailfilter HOWTO.  It describes how to set up CRM114
+and Mailfilter to filter your incoming mail, as of the version
 CRM114-20060209-ReaverSecondBreakfast.
 
 This HOWTO doesn't describe _how_ CRM114, Mailfilter, Mailtrainer, or
@@ -22,7 +28,7 @@ or Windows will require considerably more work than we describe here
       WHATSOEVER for this software to be useful in any way; it's going
       to tamper with your incoming mail and you can easily imagine the
       dangers in that.
-    
+
    ----------------------------------------------------------
 
 That said, I hope CRM114, Mailreaver, and Mailreaver is useful to you;
@@ -42,7 +48,7 @@ Something to Remember:
 
     Mailfilter is just _one_ of the possible filters; there are many
     more out there and if Mailfilter doesn't do what you want, it's
-    easy to create one that does.  
+    easy to create one that does.
 
     Mailreaver is another one of the filters, with different (and
     better, I hope) designs, that can use Mailtrainer (yet another
@@ -65,7 +71,7 @@ Something to Remember:
 These are the major steps in using CRM114 Mailfilter.  The steps are
 pretty simple:
 
-      1) Downloading what you need  
+      1) Downloading what you need
 
 	 (it's just 1 or 2 megabytes in a single .gz file)
 
@@ -79,7 +85,7 @@ pretty simple:
          (editing one file, most likely change is ONE line, and we tell
 	 you which one)
 
-      3) Setting up the needed auxilliary files 
+      3) Setting up the needed auxilliary files
 
 	 (not more than 2 files to edit of no more than 5 lines each,
 	 plus typing one or two commands)
@@ -173,7 +179,7 @@ Executables"
 
                        Step 2: Setting Up the Executables
 
-In this step, you will install four binaries into your system.  
+In this step, you will install four binaries into your system.
 The four binaries are:
 
     crm - the CRM114 "compute engine".  It's called "crm" because "crm114"
@@ -203,23 +209,23 @@ There are three ways you can set up these executables.  You can:
       c) install with a .src.tar.gz    (tarball of complete source)
 
 Note 1:
-   If you do not have root on the machine you are installing on, you 
-   may have some problems during the installation.  You may want to 
+   If you do not have root on the machine you are installing on, you
+   may have some problems during the installation.  You may want to
    reconsider using the statically linked binaries instead of compiling
    from sources.
 
   -----
 
-  Step 2 Method A: Installing from .i386.tar.gz        
+  Step 2 Method A: Installing from .i386.tar.gz
 
 First, untar the binary release.  Type:
-	
+
 	   tar -zxvf crm114-<version>.i386.tar.gz
 
 You should now become root.  If you do not have root on your machine,
 you _can_ execute CRM114 programs directly from your home directory,
 by changing your $PATH appropriately; see your shell man page for how
-to do this for your particular shell (it varies with the shell, so 
+to do this for your particular shell (it varies with the shell, so
 I can't tell you here how to do it) and skip to the end of this step.
 Or- you can run the binary explicitly from your current directory
 by invoking it as ./crm114_tre.
@@ -244,7 +250,7 @@ Now, you can test your work.  Type
      crm -v
 
 which will cause CRM114 to print out the version of itself you
-just installed.  
+just installed.
 
 You can also run a quick "Hello, world!" by typing:
 
@@ -269,7 +275,7 @@ big .src.tar.gz with the command:
 	   tar -zxvf crm114-<version>.src.tar.gz
 
 Now cd down into the crm114-<version> directory.  You will see many files
-here.  
+here.
 
 You now have a choice: you can build CRM114 with either the GNU regex
 libraries (not recommended, as GNU regex can't handle embedded NULL
@@ -300,9 +306,9 @@ FORGET to tell configure to "--enable-static" ) :
 	     cd tre-<tre_version_number>
 
 	     ./configure --enable-static
-	     
+
 	     make
-	     
+
 	     make install
 
 You have now installed the TRE regex library as /usr/local/lib/libtre .
@@ -336,7 +342,7 @@ Makefile is self-contained and presupplied) type:
 
 	  make
 
-This will compile and link the CRM114 executable and the utilities.  
+This will compile and link the CRM114 executable and the utilities.
 You can test this executable if you want.  Just type:
 
         make megatest
@@ -358,7 +364,7 @@ If you are happy with the executable, type
 
         make install
 
-This will install the executable into /usr/bin/crm (by default).  If 
+This will install the executable into /usr/bin/crm (by default).  If
 you want another install location, you can change it in the Makefile.
 You can now check to see that the install version by:
 
@@ -376,7 +382,7 @@ then hit ^D (end-of-file on *nix).  You;ll get back a response like:
 
 
 Congratulations!  You've now completed the installation of CRM114 and
-utilities from source.  Move on to the next step - "Step 3: Setting Up 
+utilities from source.  Move on to the next step - "Step 3: Setting Up
 Your .CSS Files" .
 
 
@@ -403,7 +409,7 @@ closing slash on the directory name or you will end up nowhere)
 The format of mailfilter.cf itself is pretty simple.
 
 0) blank lines are OK.
-1) comments start with a # in column 1.  
+1) comments start with a # in column 1.
 2) Anything not a comment is a var setting, in the format:
 
    :var_to_set: /Value_to_set_goes_here/
@@ -447,7 +453,7 @@ typical cases for most users:
 
 1) If you ARE using Procmail or another filtering MDA:
 
-  --> You probably will NOT need to change any of the other options.  
+  --> You probably will NOT need to change any of the other options.
 
 2) If you ARE NOT using Procmail, but your mail reading program can
    sort out email into folders based on whether the SUBJECT header
@@ -466,7 +472,7 @@ typical cases for most users:
    To do this, look down to ":general_fails_to:".  Insert the full
    username@domainname.tld mail address where you want your spam to be
    sent.
-   
+
 
   Note on mime decoders: There are a number of them available; the defaults
   given in mailfilter.cf may or may not be valid on your system.  Further,
@@ -474,22 +480,22 @@ typical cases for most users:
   Yet further, you may want to load your own, like "normalizemime" (see
   the crm114.sourceforge.net web page for details on the download).
 
-You can also configure the verboseness (or not) of your filtered 
+You can also configure the verboseness (or not) of your filtered
 results.  You can go from "no changes" (not even a statistical label
 in the headers) to complete results including an expansion of any
-base64 texts and HTML decommented strings.  
+base64 texts and HTML decommented strings.
 
 Feel free to change things to get the look and feel you want; after
 all, what good is open source if you don't change it?  :-)
 
-HOWEVER, Please don't muck with variables that aren't in the 
+HOWEVER, Please don't muck with variables that aren't in the
 mailfilter.cf file. "You make a mess, you clean it up."  :-(
 
 After making these changes, write out "mailfilter.cf".  You may
 later go back and change the configuration options, but the options
 as already set are good for most users.  You do not need to do anything
-to "load in" the new options, as CRM114 reads them in fresh from the 
-file during initialization for each email. 
+to "load in" the new options, as CRM114 reads them in fresh from the
+file during initialization for each email.
 
 Now, proceed to "Step 4: Setting Up Other Needed Files" .
 
@@ -506,13 +512,13 @@ Now that the crm114 language is working, you need to set up your
 All of these files need to exist (either by being there, or by
 being symlinked to) the directory where CRM114 will "run in"
 when an actual mail comes in.  Usually this is your per-user
-directory on the mail server (if your mail server is also your 
+directory on the mail server (if your mail server is also your
 home directory, then it's there.).    If this is inconvenient,
 you can use the --fileprefix option on the command line to
 tell CRM114 to "change over" to a different directory.  The files
 that need to be in the home (or --fileprefix) directory are:
 
-    rewrites.mfp     
+    rewrites.mfp
     spam.css
     nonspam.css
     priolist.mfp
@@ -535,7 +541,7 @@ forwarded.  None of these are a good thing, in the long run)
 The rewrites.mfp file controls how to "rewrite" incoming email so
 that your incoming email conforms more closely to what might be
 considered "archetypal".  The rewrites.mfp setup is optional;
-if you build your own .css files (either from empty files, or 
+if you build your own .css files (either from empty files, or
 from corpora) you can actually replace rewrites.mfp with an
 empty file; you just won't be able to share your .css files with
 anyone else.
@@ -599,16 +605,16 @@ or
 
 This is a rewrite operator.  Anything that matches the regex on the
 left-hand side of the arrowhead will be replaced with the text on
-the right-hand side of the arrowhead.  (the "arrowheads" that have 
+the right-hand side of the arrowhead.  (the "arrowheads" that have
 one hyphen in them will rewrite only if the entire left-hand match
 is found on a single line; if you use two hyphens, to make a ">-->"
 instead of ">->" then the left-hand match can be multi-lined.)
 
-Example: if your name was Agent Smith, your email account 
+Example: if your name was Agent Smith, your email account
 AgentSmith@the.matrix.net, and your mail router was mail.matrix.net at
 IP address 192.168.10.5, then the rewrites.mfp file should look like:
 
-  AgentSmith@the.matrix.net>->MyEmailAddress 
+  AgentSmith@the.matrix.net>->MyEmailAddress
   [[:space:]]Agent Smith>-> MyEmailName
   mail.matrix.net>->MyLocalMailRouter
   192.168.10.5>->MyLocalMailRouterIP
@@ -656,14 +662,14 @@ situations.
 
 If your mail service runs on your local machine (say, you have just
 one machine - and I do hope you have a firewall in that case), then
-mailfilter will almost certainly "run" in your home directory- the 
+mailfilter will almost certainly "run" in your home directory- the
 directory you're in when you log in.
 
 If your mail service runs on a mail server (not your local machine),
 then you will probably have a "home directory" on that machine as well,
 and that's the directory that the mail filter will run in.
 
-If neither of these is the case, you should ask your system 
+If neither of these is the case, you should ask your system
 administrator what the correct directory is.
 
   -----
@@ -671,7 +677,7 @@ administrator what the correct directory is.
   Step 4 Part 2 Method A - Build Your Own Empty .CSS Files
 
 This method will give you the best final accuracy, but you will
-spend more time training.  
+spend more time training.
 
 This is the recommended method for users wanting the best accuracy.
 
@@ -679,16 +685,16 @@ To start from scratch, you need to create empty .css files.  The
 cssutil program will do that for you.  Just type:
 
    cssutil -b -r spam.css
-   
+
    cssutil -b -r nonspam.css
 
 and you will have created _empty_ spam.css and nonspam.css files in
 your current directory (that is, the files are full-size, but contain
-no information.  They'll be full of binary zeroes). 
+no information.  They'll be full of binary zeroes).
 
 Once you have these empty files you will have a high (50% or so)
 error rate for the first few hours, till you have 'taught' CRM114
-what your particular mix of spam and nonspam looks like.  Proceed 
+what your particular mix of spam and nonspam looks like.  Proceed
 below to "Step 4: Configuring Mailfilter".
 
 Many people want to "preload" their spam collection into CRM114.  This
@@ -699,7 +705,7 @@ _only_ _as_ _they_ _occur_, than to preload a bulk database into
 CRM114.
 
 Note that the previous paragraph says "used to be".  The new program
-"mailtrainer.crm" can do rapid TOE or DSTTTR training and build your 
+"mailtrainer.crm" can do rapid TOE or DSTTTR training and build your
 .css files out of stored spam and good mail collections.  You can read
 all about mailtrainer.crm in Appendix 1 of this document.
 
@@ -733,7 +739,7 @@ statistics, you will have a better (smaller, faster) final
 configuration if you build your own .css files from scratch.
 
 
-  -----  
+  -----
 
     Step 4 Part 2 Method C - BETA TEST - Using mailtrainer.crm to
     Build .CSS Files
@@ -741,9 +747,9 @@ configuration if you build your own .css files from scratch.
 New in 20060101 is the "mailtrainer.crm" program.  This program
 accepts two directories of "archetype" good and spam email, and runs
 an interative training procedure to produce some very high quality
-.css files from these examples.  The example files need to be 
-"SMTP Virgin" - that is, exactly what was recieved at SMTP time 
-by your mail server, with _nothing_ changed.  (any changes 
+.css files from these examples.  The example files need to be
+"SMTP Virgin" - that is, exactly what was recieved at SMTP time
+by your mail server, with _nothing_ changed.  (any changes
 will affect accuracy, probably negatively)
 
 The mailtrainer training will typically take something like 1 to 10
@@ -784,7 +790,7 @@ instead).
 
 If you are OK with this, here's what to do:
 
- 1) Put copies (or symlinks/hardlinks) to all of your example 
+ 1) Put copies (or symlinks/hardlinks) to all of your example
  spam into a subdirectory named spam.dir in the local directory.
 
  2) Put copies (or symlinks/hardlinks) to all of your example
@@ -819,7 +825,7 @@ and the .css files, you can test your configuration by typing the
 following (The '^D' at the end is a control-D, which is an END-OF-FILE
 on Linux.  Other systems may use a different END-OF-FILE character):
 
-    ./mailfilter.crm 
+    ./mailfilter.crm
     This is a test.  Just type a few lines of text
     that you might ordinarily get, like a short rant on why
     Perl is useless for big projects, or why Linux is
@@ -828,7 +834,7 @@ on Linux.  Other systems may use a different END-OF-FILE character):
 
 or (to use mailreaver instead)
 
-    ./mailreaver.crm 
+    ./mailreaver.crm
     This is a test.  Just type a few lines of text
     that you might ordinarily get, like a short rant on why
     Perl is useless for big projects, or why Linux is
@@ -844,21 +850,21 @@ should have something that _vaguely_ looks like the following):
   From foo@bar  Thu Sep 18 19:20:35 2003
   X-CRM114-Status: Good  ( pR: 12.630237  )
 
-   ** ACCEPT: CRM114 PASS SBPH/BCR TEST** 
-  Probabilistic match quality: 1.000000, pR: 12.630237 
-  P(succ): 1.000000e-00, P(fail): 2.342950e-13 
-  Features: 336, S hits : 4313, F hits : 5901 
- 
+   ** ACCEPT: CRM114 PASS SBPH/BCR TEST**
+  Probabilistic match quality: 1.000000, pR: 12.630237
+  P(succ): 1.000000e-00, P(fail): 2.342950e-13
+  Features: 336, S hits : 4313, F hits : 5901
+
 or:
 
   From foo@bar  Thu Sep 18 19:19:39 2003
   X-CRM114-Status: SPAM  ( pR: -2.866484  )
 
-   ** REJECT: CRM114 FAIL SBPH/BCR TEST** 
-  Probabilistic match quality: 0.001358, pR: -2.866484 
-  P(succ): 1.358082e-03, P(fail): 9.986419e-01 
-  Features: 144, S hits : 2337, F hits : 3313 
- 
+   ** REJECT: CRM114 FAIL SBPH/BCR TEST**
+  Probabilistic match quality: 0.001358, pR: -2.866484
+  P(succ): 1.358082e-03, P(fail): 9.986419e-01
+  Features: 144, S hits : 2337, F hits : 3313
+
 If you are using "mail to spamtrap account" filtering, then you will
 either get an "accept" report back (the first report above is an
 "accept") or the text you typed in will be mailed to your spamtrap
@@ -867,7 +873,7 @@ and see if your test text ended up there.
 
 If all the numbers are zero, or the result is "UNSURE", that's OK,
 it just means there isn't enough statistical information in the .css
-files yet to actually decide if it's spam or not.  This is a good 
+files yet to actually decide if it's spam or not.  This is a good
 situation.
 
 If you don't get _either_ of the above, something is broken, either in
@@ -891,26 +897,26 @@ classifiers; for OSBF classifiers use osbf-util instead of cssutil.
 Type in:
 
     cssutil -b -r spam.css
-    
+
     cssutil -b -r nonspam.css
 
 You should get back a report something like this:
 
-     Sparse spectra file spam.css statistics: 
+     Sparse spectra file spam.css statistics:
 
-     Total available buckets          :      1048576 
-     Total buckets in use             :       506987  
+     Total available buckets          :      1048576
+     Total buckets in use             :       506987
      Total hashed datums in file      :      1605968
      Average datums per bucket        :         3.17
-     Maximum length of overflow chain :           39  
-     Average length of overflow chain :         1.84 
+     Maximum length of overflow chain :           39
+     Average length of overflow chain :         1.84
      Average packing density          :         0.48
 
 Note that the packing density is 0.48; this means that this .css file
 is about half full of features.  Once the packing density gets above
 about 0.9, you will notice that CRM114 will take longer to process
 text.  The penalty is small below packing densities below about 0.95
-and only about a factor of 2 at 0.97 . 
+and only about a factor of 2 at 0.97 .
 
 Note - do NOT believe "ls -la" with respect to .css files!  Because
 CRM114 uses memory mapping instead of file I/O (because it's much
@@ -922,7 +928,7 @@ options to keep track of the a-time, and that defaults to "not keep
 track".  Believe in what cssutil tells you- if new features show up
 after learning (because the bucket counts change), you _are_ learning
 and "ls -la" is lying to you!  Conversely, if the bucket counts
-do NOT change, you have a file redirection or file protection 
+do NOT change, you have a file redirection or file protection
 problem and your system is NOT learning.  That's bad and you need
 to figure out the problem and fix it.
 
@@ -937,7 +943,7 @@ for Markov, OSB, and OSB Unique classifiers) Try it:
 and you'll get back a report like:
 
    Sparse spectra file spam.css has 1048577 bins total
-   Sparse spectra file nonspam.css has 1048577 bins total 
+   Sparse spectra file nonspam.css has 1048577 bins total
 
    File 1 total features            :      1605968
    File 2 total features            :      1045152
@@ -969,7 +975,7 @@ In the first method (recommended), you use Procmail's ability to
 execute a program as part of a Procmail recipe to run CRM114, which
 adds headers as needed to let Procmail or your mail-reading program do
 the sorting.
-  
+
 In the .forward method, you (or your system manager) must add a link
 from an execution command of crm114 to the directory /etc/smrsh.  This
 is because sendmail will NOT run any program that isn't "approved" by
@@ -986,7 +992,7 @@ CRM114 and mailfilter whenever your other procmail rules fail to
 decide what to do.
 
 Here's a sample Procmail recipe set.  Notice that we actually have TWO
-recipes - one to actually run crm114 and mailfilter, the other to 
+recipes - one to actually run crm114 and mailfilter, the other to
 then sort the mail based on the result.
 
    #
@@ -994,7 +1000,7 @@ then sort the mail based on the result.
 
    :0fw: .msgid.lock
    | /usr/bin/crm -u /home/my_user_directory mailfilter.crm
-  
+
    :0:
    * ^X-CRM114-Status: SPAM.*
    mail/crm-spam
@@ -1070,14 +1076,14 @@ things up a lot.
 method described below.  After that, mailfilter has the built-in
 option :decision_length: in mailfilter.cf which defaults to 16000 chars ]]
 
-This is easy to do with "head".  head -c 10000 gives the first 10,000 
-characters of input, which is usually adequate for CRM114 to get a 
+This is easy to do with "head".  head -c 10000 gives the first 10,000
+characters of input, which is usually adequate for CRM114 to get a
 good decision on.  This can be directly piped in right in the procmail
 command:
 
    :0fw: .msgid.lock
    | head -c 10000 | /usr/bin/crm -u /home/my_user_directory mailfilter.crm
-  
+
    :0:
    * ^X-CRM114-Status: SPAM.*
    mail/crm-spam
@@ -1096,10 +1102,10 @@ there) you ought to attempt to control the damage as much as possible.
  1) add a link from /etc/smrsh to crm114's executable binary in
    /usr/bin by becoming root and typing:
 
-     cat > /etc/smrsh/crmfilter 
+     cat > /etc/smrsh/crmfilter
      /usr/bin/crm mailfilter.crm >> /var/spool/mail/your_account_name_here
      ^D
-   
+
  2) add a .forward file to your account by typing:
 
      cat > .forward
@@ -1111,10 +1117,10 @@ message and see where it ends up.
 
   ----
 
-Once you have engaged CRM114 mailfilter, you now get to train it to 
+Once you have engaged CRM114 mailfilter, you now get to train it to
 recognize spam and nonspam.  Proceed to "Step 6: Training CRM114".
 
-Note: CRM114 contains a design decision that you may have to play 
+Note: CRM114 contains a design decision that you may have to play
 with.  Instead of doing memory management games, which both consume
 significant runtime CPU as well as present a major denial-of-service
 opportunity, CRM114 has an upper limit on the window size and it simply
@@ -1122,14 +1128,14 @@ won't exceed that limit (it gives an error message if an incoming
 message tries to exceed the limit)
 
 You -can- change the maximum memory limit at runtime with the -w nnnnn
-flag; for example, if you want 100 megabytes of memory available, you can 
+flag; for example, if you want 100 megabytes of memory available, you can
 set that with
 
     ...  -w 100000000
 
-to set 100,000,000 bytes as the hard limit ceiling on per-buffer memory 
+to set 100,000,000 bytes as the hard limit ceiling on per-buffer memory
 usage.  Actual usage may be about five times that number, as CRM114 does
-a buffer-shuffling dance to minimize time spent reclaiming and 
+a buffer-shuffling dance to minimize time spent reclaiming and
 compactifying memory.
 
 ---------------------------------------------------------------------------
@@ -1212,7 +1218,7 @@ or
 	command <yoursecretpassword> nonspam  (for mailfilter.crm)
 	command <yoursecretpassword> good  (for mailreaver.crm)
 
-The "c" in "command" must be in column 1, and you must put your 
+The "c" in "command" must be in column 1, and you must put your
 secret password into the command line.  Don't use the <> brackets,
 use JUST your secret password.
 
@@ -1262,8 +1268,8 @@ the text.)
    >> For mailfilter users (mailreaver is different - skip to below! <<
 
 The second way to train in spam and nonspam is to use mailfilter.crm's
-shell command line options.  When you find a spam that was mistakenly 
-accepted as good mail, pipe it through mailfilter.crm with the 
+shell command line options.  When you find a spam that was mistakenly
+accepted as good mail, pipe it through mailfilter.crm with the
 "--learnspam" flag set, like this:
 
 	 bash> mailfilter.crm --learnspam < the_spam.txt
@@ -1274,7 +1280,7 @@ this:
 
          bash> mailfilter.crm --learnnonspam < the_NON_spam.txt
 
-(yes, if you have a scriptable mail reader, you can put these 
+(yes, if you have a scriptable mail reader, you can put these
 functions right on the menu bars somewhere.  Yes, that's a hint.  :) )
 
  [[ If you are using mailreaver.crm instead of mailfilter.crm, and
@@ -1299,10 +1305,10 @@ The command looks like this:
 The command options you have available in mailreaver command line are:
 
    --spam              - train the incoming text as SPAM (if there's a
-                         recognizable cacheid, use the cached msg). 
+                         recognizable cacheid, use the cached msg).
 
    --good              - train the incoming text as GOOD (if there's a
-                         recognizable cacheid, use the cached msg). 
+                         recognizable cacheid, use the cached msg).
 
    --cache             - default is to train using the text stored
                          in the reavercache.  Use --cache=NO to *not*
@@ -1315,8 +1321,8 @@ The command options you have available in mailreaver command line are:
                          into the cache (for example, "seekrit" users who
                          aren't allowed to train or who might get msgs
                          that you don't want archived).
-  
-   --stats_only        - Don't do a full report or forwarding, just 
+
+   --stats_only        - Don't do a full report or forwarding, just
                          report the pR value on stdout.  This is a value
                          between (roughly) -1000 and +1000 where negative
                          values indicate spammyness and positive values
@@ -1333,7 +1339,7 @@ The command options you have available in mailreaver command line are:
                          text (cached will be used if possible).  --undo
                          requires either --spam or --good as well.
 
-  --fileprefix=dir       Assume that the config file "mailfilter.cf" 
+  --fileprefix=dir       Assume that the config file "mailfilter.cf"
                          and the .css files are in directory "dir".
 			 Remember to use a final closing slash on the
 			 directory name, e.g. /my/home/dir1/ instead
@@ -1341,7 +1347,7 @@ The command options you have available in mailreaver command line are:
 			 be spliced together from the last component
 			 of your --fileprefix and the nominal names,
 			 and you almost certainly don't want that.
- 
+
   --config=file          Don't use mailfilter.cf as the configuration
                          file; instead use the file so noted.
 
@@ -1350,7 +1356,7 @@ The command options you have available in mailreaver command line are:
 
      Part 6 Method C: For Mutt Users
 
-(Contributed by Mathieu Doidy and Joost van Baal:) 
+(Contributed by Mathieu Doidy and Joost van Baal:)
 
 In your ~/.muttrc, put:
 
@@ -1365,7 +1371,7 @@ where crmlearn is this script
 
 Now you have two new macros in the Mutt index menu:
 
-   * esc-s will tag a message, falsely classified as ham, as spam, 
+   * esc-s will tag a message, falsely classified as ham, as spam,
    * esc-h will tag a message, falsely classified as spam, as ham.
 
 
@@ -1376,12 +1382,12 @@ Now you have two new macros in the Mutt index menu:
 There are at least five other ways to retrain CRM114.  Some interface
 with common mail readers, some are command line tricks.
 
-Rather than catalog them here (which would quickly go out of date) you 
+Rather than catalog them here (which would quickly go out of date) you
 should go to the CRM114 web page (crm114.sourceforge.net) and browse
-the list of applications under "Cool Stuff".  
+the list of applications under "Cool Stuff".
 
 Some of these are plugins, some are web-based MUAs, and some
-are entirely new mail filters. 
+are entirely new mail filters.
 
 
       What To Do if CRM114 says "LEARNING UNNECESSARY..."
@@ -1419,7 +1425,7 @@ for mail-to-yourself, add "force" to the command line:
 
 Whenever CRM114 learns a new spam or nonspam, it not only modifies
 the .css files, but it also keeps the source text of that learning
-in the files "spamtext.txt" or "nonspamtext.txt".  
+in the files "spamtext.txt" or "nonspamtext.txt".
 
 These two files can be considered the "source code" of your .css
 files; they're all you really need to rebuild your .css files if/when
@@ -1429,7 +1435,7 @@ default) to Winnow or OSBF is "incompatible", and you might want to
 start with these files as a kickstart.
 
 ... but not necessarily; some filtering is radically different than
-Markovian; as we add new filters as technology moves forward, 
+Markovian; as we add new filters as technology moves forward,
 sometimes we will be able to kickstart, and sometimes we can't.
 
    - for upgrades that can use the current .css files, we will say so;
@@ -1501,9 +1507,9 @@ files, see the included "whitelist.mfp.example", "blacklist.mfp.example",
 and "priolist.mfp.example".
 
 Note: for my accuracy tests, I *turn off* whitelists, blacklists,
-and prio-lists.  
+and prio-lists.
 
-Be sure to test any whitelist, blacklist, or other list that you 
+Be sure to test any whitelist, blacklist, or other list that you
 add, otherwise you may get a rude surprise some day.
 
 
@@ -1522,13 +1528,13 @@ are the files that contain the "learned information").
 The utilities are:
 
     cssutil - gives you a readout of the characteristics of the
-	      information in a .css file  
+	      information in a .css file
 
     cssdiff - gives you a summary of the differences between two
 	      .css files (handy for seeing learning!)
 
     cssmerge - merges two .css files into one; handy for importing
-	      new data into a .css file.  Note that this is 
+	      new data into a .css file.  Note that this is
 	      a destructive operation on the first .css file named!
 
 
@@ -1536,14 +1542,14 @@ The utilities are:
 
 
 Usage is
-    
+
     cssutil somefile.css
 
-which will give you statistics on the file somefile.css.  You can 
+which will give you statistics on the file somefile.css.  You can
 then rescale, clip, and otherwise manage your .css files.  It is especially
 useful to check the "Average Packing Density" of the .css files
-you use; when it approaches .7 to .8, you may want to consider enlarging your 
-.css file.  To do that, see below on "Enlarging a .css file"  
+you use; when it approaches .7 to .8, you may want to consider enlarging your
+.css file.  To do that, see below on "Enlarging a .css file"
 
 Here's the -h help:
 
@@ -1566,7 +1572,7 @@ To get the difference between two .css files, use
 
     ./cssdiff somefile.css anotherfile.css
 
-which writes out a summary of how two different .css files are. 
+which writes out a summary of how two different .css files are.
 
 
 
@@ -1592,9 +1598,9 @@ Here's the cssmerge help:
     <in-cssfile> must already exist.
      -v           -verbose reporting
      -s NNNN      -new file length, if needed
-	
 
-   
+
+
 
 
 		Enlarging a .css file
@@ -1614,7 +1620,7 @@ bytes in the .css files; this works well at about a million dimensions
 
 But if you're not most people, you may need to (eventually) increase it.
 You can tell when this is necessary- running
-    
+
     cssutil
 
 will give you a utilization and percentage of slots full; when that gets
@@ -1624,17 +1630,17 @@ will dynamically evolve in real time to find what works.)  However, that's
 slow and may cause a slight loss of accuracy.
 
 One way to fix this is to "increase the dimensionality of the
-discrimination hyperspace" (no, I am not making that phrase up).  
+discrimination hyperspace" (no, I am not making that phrase up).
 It means to add new slots to the .css files.
 
-The easiest way to do this is to 
-    1) use cssutil to create a temporary, empty, larger .css file 
+The easiest way to do this is to
+    1) use cssutil to create a temporary, empty, larger .css file
     2) merge the data from the old, small .css file onto the new big file.
     3) copy the new big file over the old, small file.
 
 You can even combine steps 1 and 2, because newer versions of cssmerge
 will create a new file if needed (the -s N flag sets the number of slots
-in the new file; -S N does the same thing but rounds up to a 2^N+1 
+in the new file; -S N does the same thing but rounds up to a 2^N+1
 boundary, which is recommended ).
 
 For example, here's how to increase the size of the spam.css file
@@ -1663,7 +1669,7 @@ them to build (or improve) a set of .css files for you.
     Mailtrainer.crm (and the documentation for it) is BETA QUALITY.
     There are very likely some very amusing bugs.  Be warned !!!
     Archive your data and your .css files before using mailtrainer.crm.
-    Really!  
+    Really!
                  ***** WARNING WARNING WARNING *****
 
 
@@ -1678,7 +1684,7 @@ before you run mailtrainer.
 Mailtrainer.crm uses DSTTTTR (Double Sided Thick Threshold Training with
 Testing Refutation) which is something I didn't come up with (Fidelis
 is on my list of suspects for this).  The good news is that this can
-more than double accuracy of OSB and similar classifiers.  
+more than double accuracy of OSB and similar classifiers.
 
 It is safe to run mailtrainer.crm repeatedly on a .css fileset and
 training data; if the data doesn't need to be trained in, it won't be
@@ -1694,19 +1700,19 @@ Preferably the headers and text will be complete, intact, and
 unmutilated.  The closer these examples are to what SMTP will
 show "on the wire" the better.
 
-If you use a mail reader that puts your "good" and "spam" emails 
+If you use a mail reader that puts your "good" and "spam" emails
 as separate files in two different directories (or can hack up a script
-to do that) then you could even run mailtrainer.crm automatically 
-every night to optimize the .css files to your current profile.  
+to do that) then you could even run mailtrainer.crm automatically
+every night to optimize the .css files to your current profile.
 If you do this, your script needs to gaurd against situations where
-you haven't checked your mail in a few days and errors crept in; for 
+you haven't checked your mail in a few days and errors crept in; for
 safety your script should only add the files to the training directories
-until you have hand-checked them (or at least tacitly agreed).  
+until you have hand-checked them (or at least tacitly agreed).
 
 If you find you've made a mistake, don't worry.  It's recoverable.
-Just put the misplaced files into the correct directory and rerun 
+Just put the misplaced files into the correct directory and rerun
 mailtrainer.crm .  That will re-optimize the .css files (though some
-low-value features may be swept away).  
+low-value features may be swept away).
 
 Alternatively, if you start out keeping each and every file that
 you've trained, you can just delete the erroneous spam.css and nonspam.css
@@ -1717,7 +1723,7 @@ It's OK to have the spam and good directories just be full of links
 (that's what I do).
 
 NOTE: mailfilter.crm doesn't (yet) understand how to build and maintain
-the spam and good email directories.  
+the spam and good email directories.
 
 NOTE 2: It is at this point unknown whether it's a good idea or a bad
 idea to run mailtrainer on the probably good and probably bad emails
@@ -1750,7 +1756,7 @@ Optional:
         --thick=N   - thickness for thick-threshold training- this
                        overrides the thickness in your mailfilter.cf file.
 		       Omit it if you want to use the in-file value.
-		       (10 works well for most classifiers; use 0.1 
+		       (10 works well for most classifiers; use 0.1
 		       or less for Hyperspace)
 
         --streak=N  - how many successive correct classifications
@@ -1770,15 +1776,15 @@ Optional:
                        corpus works pretty well, but N=1 will produce
 		       the most compact .css files.
 
-        --random    - randomize the training set rather than taking the 
+        --random    - randomize the training set rather than taking the
                        files in sequential alternating order (one from good,
                        then one from spam).  Note that this is (currently)
-                       incompatible with a wildcard for selection of good 
+                       incompatible with a wildcard for selection of good
                        versus spam files.
 
         --reload    - if we run out of one kind of file (good or spam)
                       before the other, "reload" (start from the first
-                      file again) in that category.  Default is to 
+                      file again) in that category.  Default is to
                       simply use only the remaining category for the
                       remainder of the training pass.
 
@@ -1788,14 +1794,14 @@ Optional:
                        and .css files in 'directory', rather
                        than in the current directory.
 
-        --goodcss=somecssfile.css  -  use this 'good' cssfile instead of 
+        --goodcss=somecssfile.css  -  use this 'good' cssfile instead of
                        the default "nonspam.css"
 
         --spamcss=somecssfile.css  - use this 'spam' cssfile instead of
                        the default "spam.css"
 
         --collapse  - collapse the flying output down to scroll less on a TTY.
-    
+
         --report_header="some text" - put this at the head of the report
 
         --rfile="somefilename.txt" - append (not overwrite!) log to this file.
@@ -1808,7 +1814,7 @@ Optional:
                        Do NOT put slashes around the regex!
 
 
-Example 1: 
+Example 1:
 
   - We want to create new .css files for our mail filter
   - We already have presorted directories of good and spam email
@@ -1835,13 +1841,13 @@ or possibly get an error!
 
 Example 2:
 
- - We want to run mailtrainer.crm against a bunch of examples in the 
+ - We want to run mailtrainer.crm against a bunch of examples in the
    directory ../SA2/spam/ and ../SA2/good/.  (This happens to be where
-   the TREC test set is on my computer- your location will be different)  
- - We want to quit when we get 4000 tests in a row correct, or if 
-   we go through the entire corpus 5 times.  
+   the TREC test set is on my computer- your location will be different)
+ - We want to quit when we get 4000 tests in a row correct, or if
+   we go through the entire corpus 5 times.
  - We want to use DSTTTR, with a training thickness of 5 pR
-   units.  
+   units.
  - We want to "validate" our training - that is, to hold back some fraction
    of the training set as test cases.  In our case here, we decide we want to
    use any file name that contains a "*3.*" .  These files will be
@@ -1865,7 +1871,7 @@ for 5 passes of DSTTTTR training.
 
 Notes:
 
-* If the .css statistics files don't exist, they will be created for 
+* If the .css statistics files don't exist, they will be created for
 you, in the format set up by the mailfilter.cf file.  So- be SURE to
 set up mailfilter.cf first!
 
@@ -1902,8 +1908,8 @@ improve your accuracy still more.
 That's all!  If you have errors or updates (or find bugs!) please
 let me know; the best way is to join the CRM114-general mailing list; it's
 on the webpage:
-   
-   http://crm114.sourceforge.net  
+
+   http://crm114.sourceforge.net
 
 and ask there.  The reason for using the mailing list rather than
 personal email is that personal email isn't archived, but the mailing
@@ -1914,4 +1920,3 @@ faster than if you sent the email to me alone.
 Enjoy, and good luck.
 
        -Bill Yerazunis
-   

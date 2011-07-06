@@ -1,15 +1,8 @@
-//  crm_markovian.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007 William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may
-//  obtain a copy of the GPL by visiting the Free Software Foundations
-//  web site at www.fsf.org, and a copy is included in this
-//  distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_markovian.c - Markovian tools
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -68,6 +61,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int h;                   //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN]; //  the regex pattern
     int plen;
+    long markov_file_length;
     char ltext[MAX_PATTERN]; //  the variable to learn
     int llen;
     char htext[MAX_PATTERN]; //  the hash name
@@ -210,9 +204,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             return fev;
         }
         //       do we have a user-specified file size?
-        if (sparse_spectrum_file_length == 0)
+        markov_file_length = sparse_spectrum_file_length;
+        if (markov_file_length == 0)
         {
-            sparse_spectrum_file_length =
+            markov_file_length =
                 DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH;
         }
 
@@ -228,9 +223,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             return fev;
         }
 
-        //       put in sparse_spectrum_file_length entries of NULL
+        //       put in markov_file_length entries of NULL
         if (file_memset(f, 0,
-                        sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+                        markov_file_length * sizeof(FEATUREBUCKET_STRUCT)))
         {
             fev = fatalerror_ex(SRC_LOC(),
                                 "\n Couldn't write to file %s; errno=%d(%s)\n",
@@ -268,7 +263,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (user_trace)
     {
         fprintf(stderr, "Sparse spectra file %s has length %d bins\n",
-                learnfilename, (int)(hfsize / sizeof(FEATUREBUCKET_TYPE)));
+                learnfilename, (int)(hfsize / sizeof(FEATUREBUCKET_STRUCT)));
     }
 
     //
@@ -286,7 +281,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     //   now set the hfsize to the number of entries, not the number
     //   of bytes total
-    hfsize = hfsize / sizeof(FEATUREBUCKET_TYPE);
+    hfsize = hfsize / sizeof(FEATUREBUCKET_STRUCT);
 
 
 #ifdef OSB_LEARNCOUNTS
@@ -949,7 +944,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double plltc[MAX_CLASSIFIERS]; // current local probability of this class
 
     //   int hfds[MAX_CLASSIFIERS];
-    FEATUREBUCKET_TYPE *hashes[MAX_CLASSIFIERS];
+    FEATUREBUCKET_STRUCT *hashes[MAX_CLASSIFIERS];
     int hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     int succhash;
@@ -1276,7 +1271,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             //  set this hashlens to the length in
                             //  features instead of the length in bytes.
 
-                            hashlens[maxhash] = hashlens[maxhash] / sizeof(FEATUREBUCKET_TYPE);
+                            hashlens[maxhash] = hashlens[maxhash] / sizeof(FEATUREBUCKET_STRUCT);
                             //
                             //     save the name for later...
                             //

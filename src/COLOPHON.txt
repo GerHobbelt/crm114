@@ -1,3 +1,10 @@
+#
+#	COLOPHON.txt - Production notes of CRM114
+#
+# Copyright 2001-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 The CRM114 Discriminator system was written mostly while going to and
 from my day job on Boston's MBTA commuter rail trains.  The
 development machine was a Sony Picturebook C1VP running Red Hat Linux
@@ -33,7 +40,7 @@ I would also like to thank Richard M. Stallman and Linus Torvalds, for
 leading by example.
 
 This code is copyrighted by William S. Yerazunis, and released under
-the Free Software Foundation's GPL license, version 2.0 or later; a
+the Free Software Foundation's GPL license, version 3.0 or later; a
 copy is enclosed.  Go to www.fsf.org to get newer versions, if
 desired.  If you need a different release, please contact the author;
 release under other licensing arrangements is possible to negotiate.
@@ -42,7 +49,7 @@ As Napoleon said:
 
     "When all else fails, march toward the sound of the guns."
 
-        -Bill Yerazunis
+                                                  -Bill Yerazunis
 
 
 

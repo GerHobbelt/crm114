@@ -1,4 +1,4 @@
-^insert_regexes_here_of_any pre-learn and pre-evaluate rewrite regexes$>-> 
+^insert_regexes_here_of_any pre-learn and pre-evaluate rewrite regexes$>->
 ^the_rewrite_format_is_'from'_then_greater_dash_greater_then_'to'$>->
 ^if_you_don't_want_a_'to'_you_still_need_the_>->_or_else_nothing_will_happen
 ^__use^and_$_to_anchor_ends_>-> for_a_single_line_pattern.  Example:

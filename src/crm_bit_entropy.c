@@ -1,14 +1,8 @@
-//  crm_bit_entropy.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007 William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_bit_entropy.c - entropy classification utilities
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -51,7 +45,7 @@
 //       2005
 //    3) Matthew Young-Lai,  Adding state merging to the DMC data
 //       compression algorithm, Information Processing Letters 70
-//       (1999) 223â€“228.
+//       (1999) 223–228.
 //
 //
 //    The basic concept is to construct a Markov chain that describes
@@ -313,11 +307,11 @@
 //    this a finite impulse response (FIR) filter; infinite precision
 //    would give infinite impulse response and "total recall" of prior
 //    states in the Markov process - but also the ability for some
-//    int-ago series of perfectly correct steps to blow away the more
+//    long-ago series of perfectly correct steps to blow away the more
 //    recent entropy.  For this reason, we usually use an exponent of
 //    1, which yields a prior bit weight of 1/2 (which is just the
 //    floating-point mantissa as described above).  (NB: as of 20070101,
-//    the "floating point" has been replaced by a "int int" with 64 bits
+//    the "floating point" has been replaced by a "long long" with 64 bits
 //    of precision.  This uses less space)
 //
 //    Values of the exponent less than one yield a situation where the
@@ -597,7 +591,7 @@
 //     uses would have at most 62 million nodes (12 bytes/node not
 //     with short counts), or 41 million nodes = 27 bits to define
 //     state.  Since the FIR-prior value encodes at least 64 bits, can
-//     go to 96 bits (GCC 4.0 "int double") and possibly 128 (if your
+//     go to 96 bits (GCC 4.0 "long double") and possibly 128 (if your
 //     compiler supports "-mlong-double-128") shouldn't we be sticking
 //     with the FIR-prior and simply *ignoring* the actual links, as
 //     they (and the state nodes) encode far less information?
@@ -1655,6 +1649,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //                         node file details
     char htext[MAX_PATTERN];  // the node filename working buffer
     int hlen;
+  	long bit_entropy_file_length = 0;
     char *learnfilename;      // the real node file name
     struct stat statbuf;      //  for statting the node file
     int made_new_file;
@@ -1760,25 +1755,26 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //      the standard toroid (plus a little because we don't trust
         //      ourselves).
 
-        if (sparse_spectrum_file_length == 0)
+        bit_entropy_file_length = sparse_spectrum_file_length;
+        if (bit_entropy_file_length == 0)
         {
             if (unique_states)
             {
-                sparse_spectrum_file_length =
+                bit_entropy_file_length =
                     DEFAULT_BIT_ENTROPY_FILE_LENGTH;
             }
             else
             {
-                sparse_spectrum_file_length =
+                bit_entropy_file_length =
                     (BIT_ENTROPIC_SHUFFLE_HEIGHT * BIT_ENTROPIC_SHUFFLE_WIDTH)
                     + 1000;
             }
         }
 
         //   How many bytes of nodes do we need?
-        nodeslen = sparse_spectrum_file_length;
+        nodeslen = bit_entropy_file_length;
         nodebytes = nodeslen * sizeof(nodes[0]);
-        firlatlen = (int)(sparse_spectrum_file_length
+        firlatlen = (int)(bit_entropy_file_length
                           * BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION);
         firlatbytes = firlatlen * sizeof(firlat[0]);
 
@@ -1889,9 +1885,9 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             int width, height;
             //    width should be the square root of the size, rounded down
             //    to a multiple of 8 (assuming byte-wise orientation)
-            width = ((int)sqrt(sparse_spectrum_file_length) / 8) * 8;
+            width = ((int)sqrt(bit_entropy_file_length) / 8) * 8;
             //     height should be as many as possible with complete rows
-            height = sparse_spectrum_file_length / width;
+            height = bit_entropy_file_length / width;
             if (user_trace)
                 fprintf(stderr, "New toroid. width: %d, height %d\n",
                         width, height);
@@ -2908,12 +2904,12 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                           txtptr, textoffset, bitnum);
 
                     upscore = lattice_lookahead_score
-                                          (nodes, oneup, localfir, crosslink_mincount, /* [i_a] !!! */
+                                          (nodes, oneup, localfir, crosslink_mincount,
                                           0.00001,
                                           txtptr, textoffset, bitnum);
 
                     downscore = lattice_lookahead_score
-                                          (nodes, onedown, localfir, crosslink_mincount, /* [i_a] !!! */
+                                          (nodes, onedown, localfir, crosslink_mincount,
                                           0.00001,
                                           txtptr, textoffset, bitnum);
 

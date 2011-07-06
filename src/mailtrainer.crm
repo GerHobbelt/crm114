@@ -1,6 +1,19 @@
 #! /usr/bin/crm
 # --(spam good repeat streak random worst verbose validate thick reload collapse report_header rfile goodcss spamcss config fileprefix)
 #
+#	mailtrainer.crm - a TUNE type mailtrainer
+#
+
+# Copyright 2002-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#
+#       Note to SunOS and FreeBSD users - do not place command arguments
+#       of "-([arguments])" format on the first line of this program
+#       or you will not get what you expect. This is due to a kernel
+#       difference in how a bangline should be dealt with.
+#
+
 # A TUNE-type mailtrainer; repeat is the maximum number of
 # repeated executions.  This filter uses the same config as
 # mailfilter.crm.  Good and spam are trained alternately until
@@ -12,16 +25,6 @@
 # Worst means to rerun the entire set, and then retrain only the
 # N worst errors.  In the limit, this is the single worst error.
 # This is slow but yields very "tight" and accurate files.
-#
-# Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
-# GNU Public License (GPL) version 2.  A copy of this license is included
-# in the distribution media, or obtain one from www.fsf.org .
-#
-# Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
-# the first line of this program from the first "-" to the end of
-# the first line (including the "-" sign itself) or you will not get
-# what you expect.  This is due to "differences of opinion" on how
-# a bangline should be dealt with.
 #
 
 window
@@ -119,7 +122,7 @@ isolate <default> (:program_fault_exit_code:) /66/
 #
 # 4) email results to spam results and out to stdout as well.
 #
-##############################################################
+######################################################################
 #
 #
 #    ---  uncomment this if you want to include a "forced"
@@ -162,7 +165,7 @@ isolate <default> (:fail_SSM_mail_to:)  //
 isolate (:dospath:) //
 #
 
-#####################################################################
+######################################################################
 #
 #       This is the code to read the per-user configuration.  Note
 #       that because this happens during the run, it will _override_
@@ -172,7 +175,7 @@ isolate <default> (:verbose_startup:) //
 # [i_a] since GerH-BlameBarack, ALL config-file defined variables MUST be declared here
 #       (due to them otherwise remaining within the scope of the :load_cf_file: 
 #       subroutine)!
-isolate (:spw:) <default> /DEFAULT-PASSWORD/
+isolate (:spw:) <default> /DEFAULT_PASSWORD/
 isolate (:accepted_mail_exit_code:) <default> //
 isolate (:add_extra_stuff:) <default> //
 isolate (:add_headers:) <default> //
@@ -243,7 +246,7 @@ call /:load_cf_file:/ [:*:config:]
 }
 
 
-###########################################################
+######################################################################
 #    Set up defaults for mail training...
 #
 isolate <default> (:spam:)  /ERROR!!!/
@@ -295,14 +298,14 @@ isolate (:goodwildcard:)  //
 isolate (:spamwildcard:)  //
 
 
-#######################################################################
+######################################################################
 #
 #    Do a quick check - has the password been changed or not?  If it's
 #    still the default, put in something that will be well-nigh unguessable
 #    (esp. since it will contain received headers that the sender cannot
 #    see nor control.)
 {
-    match [:spw:] /DEFAULT-PASSWORD/
+    match [:spw:] /DEFAULT_PASSWORD/
     # yes, it's the same as default.  So we scramble it just so
     # nobody can hack in without major trickery.
     hash (:spw:) /:*:_env_string::*:_dw:/
@@ -344,7 +347,7 @@ call /:verbosity:/ [Setting up the forwarding email addresses:\n\
 
 
 
-###########################################################
+######################################################################
 #
 #       set gooddir and spamdir to the directory parts of the spec
 #
@@ -474,7 +477,7 @@ isolate (:single_file_mode:) //
 
 
 
-#############################################################\
+######################################################################
 #
 #       Start our report:
 #
@@ -566,7 +569,7 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile:\n/
 }
 
 
-############################################################
+######################################################################
 #
 #       Get the good directory and the spam directory files
 #
@@ -628,7 +631,7 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile:\n/
     }
 }
 
-#################################################################
+######################################################################
 #
 #     If --random, then we create the randomized interleaved list.
 #     The list is the full filenames of the spam and good files,
@@ -692,7 +695,7 @@ isolate (:randfiles:) //
 }
     
 
-#################################################################
+######################################################################
 #
 #          Create spam.css and nonspam.css if they don't exist.
 #
@@ -727,12 +730,12 @@ isolate (:randfiles:) //
 }
 
 
-####################################################################
+######################################################################
 #
 #      Top of the "entire directory" loop
 :directory_loop_top:
 #
-###################################################################
+######################################################################
 {
     {
         eval /:@: :*:repeat: > :*:throughall: :/
@@ -746,7 +749,7 @@ isolate (:randfiles:) //
         goto /:good_exit:/
     }
 }
-########################################################################
+######################################################################
 #
 #    Set up training lists for this pass.  We'll be chopping them up
 #    presently.
@@ -771,9 +774,9 @@ isolate (:rtl:) /:*:randfiles:/
     goto /:worst_training:/
 }
 
-###################################################################
+######################################################################
 #    the top of the one-file-pair loop
-###################################################################3
+######################################################################
 :one_file_pair_top:
 
 
@@ -792,7 +795,7 @@ DEBUG: spamwildcard = ':*:spamwildcard:'\n\
 DEBUG: goodwildcard = ':*:goodwildcard:'\n]
 
 
-##############################################################
+######################################################################
 #   Are we in "alternate one each" mode, or random shuffled mode?
 #   Or are we in single-input mode?
 #
@@ -1078,9 +1081,9 @@ goto /:good_exit:/
 
 
 
-#############################################################
+######################################################################
 #        Get a filename off the front of a list, whacking the list.
-#############################################################
+######################################################################
 #
 :clip_filename: (:namelist:)
 {
@@ -1100,13 +1103,13 @@ goto /:good_exit:/
 return /:*:filename:/
 
 
-##############################################################
+######################################################################
 #
 #     The actual code that does a CLASSIFY and maybe a LEARN
 #
 #     This assumes the input text is in :m_text:
 #
-##############################################################
+######################################################################
 #
 
 :test_train_good:
@@ -1200,13 +1203,13 @@ return /:*:filename:/
 return
 
 
-##############################################################
+######################################################################
 #
 #     The actual code that does a CLASSIFY and maybe a LEARN
 #
 #     This assumes the input text is in :m_text:
 #
-##############################################################
+######################################################################
 #
 
 :test_train_spam:
@@ -1300,14 +1303,14 @@ return
 return
 
 
-###################################################
+######################################################################
 :error_exit:
 {
     output /\n\n Something went very wrong.  You might want to debug.\n\n/
 }
 return /1/
 
-#####################################################
+######################################################################
 :good_exit:
 {
     # did the user ask for a validation pattern?
@@ -1394,7 +1397,7 @@ return /0/
 
 
 
-###########################################################
+######################################################################
 #
 #    Worst training - similar to an SVM, but without the
 #    grace and beauty.  We train only the minimal set of
@@ -1559,7 +1562,7 @@ goto /:worst_loop:/
 
 
 
-######################################################3
+######################################################################
 trap (:broken_program_message:) /.*/
 {
     output /:*:_nl: Aw, crud.  mailtrainer.crm broke.  Here's the error::*:_nl:/
@@ -1573,7 +1576,7 @@ exit /:*:program_fault_exit_code:/
 
 
 
-######################################################################3
+######################################################################
 #
 #              Library insertions start here.
 #

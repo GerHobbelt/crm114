@@ -1,14 +1,8 @@
-//  crm_var_hash_table.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_var_hash_table.c - handle variable hash tables
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -593,6 +587,20 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
                    "The bad variable was named: ",
                    varname);
         return;
+		/*
+		Since 2009, bill has the above as a nonfatal, and this following it:
+
+	      vallen = data_window_size - (strlen (varname)) - tdw->nchars - 1024;
+	      if (vallen < 1)
+		    fatalerror5 ("Your program is so low on memory that it could not "
+	                     "even clip the big variable.  This is really bad. "
+	                     "The evil variable was named: " ,
+	                     varname, CRM_ENGINE_HERE);
+
+		I don't think it's worth the effort; besides, clipping the data
+		will have all sorts of unpredictable side effects at run time in your
+		scripts, so better to barf a hairball and quit while you're ahead.
+		*/
     }
 
     //       check- is this the first time we've seen this variable?  Or
@@ -610,7 +618,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         //
         //       do the name first.  Start with a newline.
         //  GROT GROT GROT
-        tdw->filetext[tdw->nchars] = 'X';
+        tdw->filetext[tdw->nchars] = 'n'; // 'X';
         tdw->nchars++;
         namestart = tdw->nchars;
         namelen = vnlen;
@@ -629,7 +637,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         //
         //       add a separator again, so we don't get strings with overlapped
         //       ranges into the var hash table
-        tdw->filetext[tdw->nchars] = 'Y';
+        tdw->filetext[tdw->nchars] = ' '; // 'Y';
         tdw->nchars++;
         //
         //        and put a NUL at the end of the tdw, so debuggers won't get
@@ -2253,7 +2261,7 @@ int crm_is_legal_variable(const char *vname, size_t vlen)
     {
         return 0;
     }
-    // by now, we know we WILL find a ':'; only matter now is wehen the first one will pop up:
+    // by now, we know we WILL find a ':'; only matter now is when the first one will pop up:
     if (((const char *)memchr(vname + 1, ':', vlen - 1)) - vname != vlen - 1)
     {
         return 0;

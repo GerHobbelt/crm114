@@ -2,15 +2,17 @@
 #  **** bangline argument config commented out for better system portability
 # -( spam good cache dontstore stats_only verbose maxprio minprio delprio fileprefix config)
 #
-#    Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+#	mailreaver.crm - 3rd Generation mail filter "standard script"
 #
-#   Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
-#   the first line of this program from the first "-" to the end of
-#   the first line (including the "-" sign itself) or you will not get
-#   what you expect.  This is due to "differences of opinion" on how
-#   a bangline should be dealt with.
+
+# Copyright 2002-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#
+#       Note to SunOS and FreeBSD users - do not place command arguments
+#       of "-([arguments])" format on the first line of this program
+#       or you will not get what you expect. This is due to a kernel
+#       difference in how a bangline should be dealt with.
 #
 
 window
@@ -204,7 +206,7 @@ isolate (:truncate_logfile:) <default> /SET/
 # [i_a] since GerH-BlameBarack, ALL config-file defined variables MUST be declared here
 #       (due to them otherwise remaining within the scope of the :load_cf_file: 
 #       subroutine)!
-isolate (:spw:) <default> /DEFAULT-PASSWORD/
+isolate (:spw:) <default> /DEFAULT_PASSWORD/
 isolate (:accepted_mail_exit_code:) <default> //
 isolate (:add_extra_stuff:) <default> //
 isolate (:add_headers:) <default> //
@@ -330,7 +332,7 @@ call /:mk_abspath_on_fileprefix:/ [:*:spamcss:] (:spamcss:)
 #    (esp. since it will contain received headers that the sender cannot
 #    see nor control.)
 {
-    match [:spw:] /DEFAULT-PASSWORD/
+    match [:spw:] /DEFAULT_PASSWORD/
     # yes, it's the same as default.  So we scramble it just so
     # nobody can hack in without major trickery.
     hash (:spw:) /:*:_env_string::*:_dw:/

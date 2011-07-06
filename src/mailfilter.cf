@@ -35,7 +35,7 @@
 #     --- Others (such as Red Hat 8.0) use "mewdecode" .
 #     --- Yet others (such as Fedora Core 3) use "openssl base64 -d" .
 #     --- Yet Others (i.e. *BSDs) can use "base64" .
-#     --- See which one is on your system and use that one- comment
+#     --- See which one is on your system and use that one - comment
 #     --- the others out.  If you can't figure out what your base64 mime
 #     --- decoder is, or don't want mime decoding, set :do_base64: to /no/
 #     --- but expect a significant accuracy decrease if you do this.
@@ -478,7 +478,7 @@
 #            you should also set the following to point to an address that
 #            will get read on a quick basis, becuause this is where autotrain
 #            verifications will go.
-# 
+#
 #:autotrain_address: /root/
 #
 

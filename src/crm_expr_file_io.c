@@ -1,14 +1,8 @@
-//  crm_file_io.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_file_io.c - file I/O routines
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -308,7 +302,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
         }
 
-        //    are we supposed to use readline?
+        //    are we supposed to use readline (the <readline> flag)?
 #ifdef HAVE_LIBREADLINE
         if (use_readline && is_stdin_or_null(fp))
         {

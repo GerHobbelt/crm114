@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	exectest.crm - test system execution
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 {
 	isolate (:lsout:)
@@ -46,10 +52,10 @@ window
 	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la *.c/        # [Windows-MS] /dir \/s *.c /
 	output /--- got immediate : \n:*:lslaout: \n ---end-----/
     :async_test_sleeploop:
-	syscall <keep > () (:lslaout:) (:proc:) //	
+	syscall <keep > () (:lslaout:) (:proc:) //
 	output /--- got this later : \n-:*:lslaout:-\n/
 	{
-		#       try it first sleeping only .1 second 
+		#       try it first sleeping only .1 second
 		{
 			syscall /sleep .1/
 			output /--- .1 sleep\n/

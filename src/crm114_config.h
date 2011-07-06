@@ -1,21 +1,24 @@
-//  crm114_config.h  - Controllable Regex Mutilator base config, version X0.1
-//  Copyright 2001-2009 William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm114_config.h -- Configuration for CRM114.
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+// TODO   merge for real!
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////
-//
-//    Configuration for CRM114.  Some things here you can change
-//    with relative impunity.  Other things, not so much.  Where
-//    there are limiting factors noted, please obey them or you
-//    may break something important.  And, of course, realize that
-//    this is GPLed software with NO WARRANTY - make any changes
-//    and that goes double.
-//
+//	Some things here you can change with relative impunity.
+//	Other things, not so much.  Where there are limiting factors
+//	noted, please obey them or you may break something important.
+//	And, of course, realize that this is GPLed software with
+//	NO WARRANTY - make any changes and that goes double.
 ///////////////////////////////////////////////////////////////////
 
 #ifndef __CRM114_CONFIG_H__
@@ -69,7 +72,8 @@
 //    mmap cacheing length - only actually write out this often.
 //     set to 0 to disable mmap cacheing and release files faster.
 //      However, this has a negative speed impact.
-#define UNMAP_COUNT_MAX 0
+// // I unset this from 0 -JB
+//#define UNMAP_COUNT_MAX 0
 //#define UNMAP_COUNT_MAX 2
 //#define UNMAP_COUNT_MAX 1000
 
@@ -122,6 +126,9 @@
 #define STATISTICS_FILE_NCHUNKS 1024
 #define STATISTICS_FILE_IDENT_STRING_MAX 1024
 #define STATISTICS_FILE_ARB_DATA 1024
+
+
+#define CLASSNAME_TAG_LENGTH 32
 
 //    do we use Sparse Binary Polynomial Hashing (sensitive to both
 //    sequence and spacing of individual words), Token Grab Bag, or
@@ -220,22 +227,6 @@
 //    Do we use learncount-based normalization in calculating probabilities?
 #define OSB_LEARNCOUNTS
 //
-//    Do we want "compatibility mode" between .css files LEARNed under
-//    Markovian versus those LEARNed with OSB or OSB/Unique?  Note that
-//    the default is NOT compatible with Markov; the reason for this is
-//    that Bill Y. screwed up his subscripts and caused an unintentional
-//    yet hard to fix fork in the .css table hashing formula.  Both work,
-//    both work exactly equally well, yet they are incompatible and you
-//    must choose one or the other.  If you turn on OLD_MARKOV_COMPATIBILITY,
-//    you can flip (mostly) back and forth between <microgroom> and
-//    <osb microgroom>.  But if you've already built any OSB .css files,
-//    you can't do this flip.  But if you have older OSB .css files,
-//    you can't turn this on without having the data become inaccessible.
-//    And there's no easy way to translate (due to the hashing obfuscation)
-//    Anyway, it's better to rebuild from fresh spam anyway, so blame Bill.
-//             - Bill
-// #define OLD_MARKOV_COMPATIBILITY
-//
 //    Do we take only the maximum probability feature?
 //
 //#define USE_PEAK
@@ -245,6 +236,13 @@
 //    Make sure ONE of these is turned on.
 //#define STOCHASTIC_AMNESIA
 #define WEIGHT_DISTANCE_AMNESIA
+
+#if (! defined (STOCHASTIC_AMNESIA) && ! defined (WEIGHT_DISTANCE_AMNESIA))
+#error Neither STOCHASTIC_AMNESIA nor WEIGHT_DISTANCE_AMNESIA defined
+#elif (defined (STOCHASTIC_AMNESIA) && defined (WEIGHT_DISTANCE_AMNESIA))
+#error Both STOCHASTIC_AMNESIA and WEIGHT_DISTANCE_AMNESIA defined
+#endif
+
 //
 //    define the default max chain length in a .css file that triggers
 //    autogrooming, the rescale factor when we rescale, and how often
@@ -291,7 +289,7 @@
 //    and how long can a variable name be
 #define MAX_VARNAME 2048
 
-//   define the default number of bytes in a learning file hash table
+//   define the default number of buckets in a learning file hash table
 //   (note that this should be a prime number, or at least one with a
 //    lot of big factors)
 //
@@ -309,6 +307,12 @@
 #define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 3396997    /* 6435616333396997 (* 1048573 (* 1048577 */
 //#define DEFAULT_BIT_ENTROPY_FILE_LENGTH 2000000
 #define DEFAULT_BIT_ENTROPY_FILE_LENGTH 1000000
+
+
+// ???
+#define OSB_BAYES_MAX_FEATURE_COUNT DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH
+
+#define WINNOW_MAX_FEATURE_COUNT DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH
 
 //    For the hyperspace matcher, we need to define a few things.
 #define HYPERSPACE_MAX_FEATURE_COUNT 500000
@@ -329,6 +333,89 @@
 #define BIT_ENTROPIC_SHUFFLE_WIDTH 1024   //   was 256
 #define BIT_ENTROPIC_PROBABILITY_NERF 0.0000000000000000001
 
+// Defines for the svm classifier
+// All defines you should want to use without getting into
+// the nitty details of the SVM are here.  For nitty detail
+// defines, see crm_svm_matrix_util.h, crm_svm_quad_prog.h,
+// crm_svm_matrix.h, and crm_svm_lib_fncts.h
+#define MAX_SVM_FEATURES 100000       //per example
+#define SVM_INTERNAL_TRACE_LEVEL 3    //the debug level when internal_trace is
+                                      //on
+#define SVM_ACCURACY 1e-3             //The accuracy to which to run the solver
+                                      //This is the average margin violation NOT
+                                      //accounted for by the slack variable.
+#define SV_TOLERANCE 0.01             //An example is a support vector if
+                                      //theta*y*x <= 1 + SV_TOLERANCE.
+                                      //The smaller SV_TOLERANCE, the fewer
+                                      //examples will be tagged as support
+                                      //vectors.  This will make it faster to
+                                      //learn new examples, but possibly less
+                                      //accurate.
+#define SVM_ADD_CONSTANT 1            //Define this to be 1 if you want a
+                                      //constant offset in the classification
+                                      //ie h(x) = theta*x + b where b is
+                                      //the offset.  If you don't want
+                                      //a constant offset (just h(x) = theta*x),
+                                      //define this to be 0.
+#define SVM_HOLE_FRAC 0.25            //Size of the "hole" left at the end of
+                                      //the file to allow for quick appends
+                                      //without having to forcibly unmap the
+                                      //file.  This is as a fraction of the
+                                      //size of the file without the hole.  So
+                                      //setting it to 1 doubles the file size.
+                                      //If you don't want a hole left, set
+                                      //this to 0.
+#define SVM_MAX_SOLVER_ITERATIONS 200 //absolute maximum number of loops the
+                                      //solver is allowed
+#define SVM_CHECK 100                 //every SVM_CHECK we look to see if
+                                      //the accuracy is better than
+                                      //SVM_CHECK_FACTOR*SVM_ACCURACY.
+                                      //If it is, we exit the solver loop.
+#define SVM_CHECK_FACTOR 2            //every SVM_CHECK we look to see if
+                                      //the accuracy is better than
+                                      //SVM_CHECK_FACTOR*SVM_ACCURACY.
+                                      //If it is, we exit the solver loop.
+//defines for SVM microgrooming
+#define SVM_GROOM_OLD 10000           //we groom only if there are this many
+                                      //examples (or more) not being used in
+                                      //solving
+#define SVM_GROOM_FRAC 0.9            //we keep this fraction of examples after
+                                      //grooming
+//defines for svm_smart_mode
+#define SVM_BASE_EXAMPLES 1000        //the number of examples we need to see
+                                      //before we train
+#define SVM_INCR_FRAC 0.1             //if more than this fraction of examples
+                                      //are appended, we do a fromstart rather
+                                      //than use the incremental method.
+// Defines for the PCA classifier
+// All defines you should want to use without getting into
+// the nitty details of the PCA are here.  For nitty detail
+// defines, see crm_svm_matrix_util.h and crm_pca_lib_fncts.h
+#define MAX_PCA_FEATURES 100000    //per example
+#define PCA_INTERNAL_TRACE_LEVEL 3 //the debug level when internal_trace is on
+#define PCA_ACCURACY 1e-8          //accuracy to which to run the solver
+#define MAX_PCA_ITERATIONS 1000    //maximum number of solver iterations
+#define PCA_CLASS_MAG 50           //the starting class magnitudes.  if this
+                                   //is too small, the solver will double it
+                                   //and resolve.  if it is too large, the
+                                   //solver will be less accurate.
+#define PCA_REDO_FRAC 0.001        //if we get this fraction of training
+                                   //examples wrong with class mag enabled, we
+                                   //retrain with class mag doubled.
+#define PCA_MAX_REDOS 20           //The maximum number of redos allowed when
+                                   //trying to find the correct class mag.
+#define PCA_HOLE_FRAC 0.25         //Size of the "hole" left at the end of
+                                   //the file to allow for quick appends
+                                   //without having to forcibly unmap the file.
+                                   //This is as a fraction of the size of the
+                                   //file without the hole.  So setting it to
+                                   //1 doubles the file size.  If you don't
+                                   //want a hole left, set this to 0.
+//defines for PCA microgrooming
+#define PCA_GROOM_OLD 10000        //we groom only if there are this many
+                                   //examples (or more) present
+#define PCA_GROOM_FRAC 0.9         //we keep this fraction of examples after
+                                   //grooming
 //    define the maximum length of a filename
 // #define MAX_FILE_NAME_LEN 255
 
@@ -355,8 +442,33 @@
 //    try 1 millisecond for now
 #define INPUT_WINDOW_SLEEP_USEC 1000
 
+//   DANGER DANGER DANGER DANGER DANGER
+//   CHANGE THESE AT YOUR PERIL- YOUR .CSS FILES WILL NOT BE
+//   FORWARD COMPATIBLE WITH ANYONE ELSES IF YOU CHANGE THESE.
+//
 //     Maximum number of different .CSS files in a CLASSIFY
 #define MAX_CLASSIFIERS 128
+
+//     how many classes can the library support?
+#define LIBCRM_MAX_CLASSES MAX_CLASSIFIERS
+//     Maximum length of a stored regex (ugly!  But we need a max length
+//     in the mapping.  GROT GROT GROT )
+#define MAX_REGEX 4096
+
+//     Maximum number of coeffs for a particular pipeline. (ugly!  But we
+//     need a max length for easy mapping.  GROT GROT GROT )
+#define MAX_PIPECOEFFS 512
+
+#define MAX_CLASSIFIER_PARAMS 1024
+
+//     Define the type of a token.  This should be either 32-bit or
+//     64-bit.  Note that some (for now, all!) classifiers will ignore this.
+typedef int CRM114_TOKEN;
+// typedef double CRM114_TOKEN;
+//
+///    END OF DANGER DANGER DANGER DANGER
+/////////////////////////////////////////////////////////////////////
+
 
 //     Maximum number of nonfatal errors we'll allow before tossing our
 //     cookies on a fatal error
@@ -368,7 +480,6 @@
 //#define FEATUREBUCKET_VALUE_MAX 32767
 #define FEATUREBUCKET_VALUE_MAX 1000000000
 #define FEATUREBUCKET_HISTOGRAM_MAX 4096
-//#define FEATUREBUCKET_TYPE unsigned short
 
 
 ////////////////////////////////////////////
@@ -403,7 +514,7 @@
 ////////////////////////////////////////////
 #define NN_RETINA_SIZE 8192
 #define NN_FIRST_LAYER_SIZE 8
-#define NN_HIDDEN_LAYER_SIZE 16
+#define NN_HIDDEN_LAYER_SIZE 8  // [i_a] was: 16
 #define NN_MAX_FEATURES 65536
 
 //     Neural Net training setups
@@ -433,8 +544,8 @@
 #define NN_MAX_TRAINING_CYCLES 500
 //  When doing a "nuke and retry", allow this many training cycles.
 #define NN_MAX_TRAINING_CYCLES_FROMSTART 5000
-//  How many times to allow a punt?
-#define NN_FROMSTART_PUNTING 1000000
+//  How often do we cause a punt (we punt every 0th epoch modulo this number)
+#define NN_FROMSTART_PUNTING 10000000
 //  After how many "not needed" cycles do we microgroom this doc away?
 #define NN_MICROGROOM_THRESHOLD 1000000
 //  use the sparse retina design?  No, it's not good.

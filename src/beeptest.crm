@@ -1,10 +1,21 @@
 #! /usr/bin/crm
-{ 
-	window
-	output /:*:_nl: CRM114: test syscall 'echo beep' :*:_nl:/
 #
-#        Note that \a is a "special" character, while \c isn't, so 
-#        we have to escape the \a so it's passed as "/" "a" while 
-#        "\c" does not need (and should not get) an escape.
-	syscall /echo -e '\\a\c' > \/dev\/tty /
+#	beelptest.crm - test syscall printf beep
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+{
+	window
+	output /:*:_nl: CRM114: test syscall 'printf beep' :*:_nl:/
+	syscall /printf '\a' > \/dev\/tty /
 }
+#{
+#	window
+#	output /:*:_nl: CRM114: test syscall 'echo beep' :*:_nl:/
+##
+##        Note that \a is a "special" character, while \c isn't, so 
+##        we have to escape the \a so it's passed as "/" "a" while 
+##        "\c" does not need (and should not get) an escape.
+#	syscall /echo -e '\\a\c' > \/dev\/tty /
+#}
+

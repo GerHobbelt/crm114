@@ -1,6 +1,9 @@
+#
 #    Makefile for CRM114
 #
-#
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #   If you want to install the executables somewhere else, change
 #    BINDIR here.  Default is /usr/bin but you can change it to /usr/local/bin
 #     if you prefer that sort of thing.
@@ -28,14 +31,20 @@ VER_SUFFIX ?=
 #
 #      The following forces the compiler to be GCC.  If you have trouble
 #      with your default compiler, and you want to force GCC, uncomment it.
-# CC=gcc
+CC=gcc
 #
-#     What version is this software (PLEASE don't change this just 
+#     What version is this software (PLEASE don't change this just
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20081111-BlameBarack
-PREV_VERSION=20081023-BlameMaxwell
+VERSION=20100106-BlameMichelson
+PREV_VERSION=20091209-BlameMichelson
+#PREV_VERSION=20090914-BlameThorstenAndJenny
+#PREV_VERSION=20090806-LastOldSVM
+#PREV_VERSION=20090423-BlameSteveJobs
+#PREV_VERSION=20090120-BlameSteveJobs
+#PREV_VERSION=20081111-BlameBarack
+#PREV_VERSION=20081023-BlameMaxwell
 #PREV_VERSION=20080923-BlameVT
 #PREV_VERSION=20080630-BlameVT
 PREV_VERSION=20080618-BlameBadGlasses
@@ -70,6 +79,10 @@ PREV_VERSION=20080618-BlameBadGlasses
 #PREV_VERSION = 20051231a-BlameBarryAndPaolo
 #PREV_VERSION = 20051001-BlameRaulMiller
 #PREV_VERSION = crm114-20050721-BlameNeilArmstrong
+#
+#   Define the TRE directory (used only for building distributions- note that
+#   this must be HAND-UPDATED when new versions of TRE come out  )
+TRE_TARFILE = tre-0.8.0
 # VERSION += [$(TRE_TARFILE)]
 #
 #
@@ -88,11 +101,17 @@ SYSTEMTYPE = POSIX
 #  Tell the compiler full optimization "-O3", add debugging info "-g", 
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
+#
+#  Our default is with full optimization, lots of warnings, and forcing
+#  certain functions to be inline (I added that to force gcc to inline functions
+#  under high optimization but not under low so that debugging is possible - 
+#  that's why DO_INLINES is defined at O3 but not O0 - JB):
+CFLAGS += -O3 -Wall -DDO_INLINES
 #  
-#  Our default is with debugging, full optimization, and lots of warnings:
+#     turn this one on for debugging, full optimization, and lots of warnings:
 CFLAGS += -g -O3 -Wall -fno-strict-aliasing
 #     turn this one on for no optimization, but debugging
-CFLAGS += -g -O0 -Wall
+#CFLAGS += -g -O0 -Wall
 #
 #     Turn this one on for time profiling.
 #CFLAGS += -pg
@@ -103,6 +122,8 @@ CFLAGS += -g -O0 -Wall
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
+#    Also note that this keeps valgrind from running correctly so comment
+#    it out for debugging.
 #LDFLAGS += -static -static-libgcc 
 #    use this one if you want program profiling.
 #LDFLAGS += -static -static-libgcc -pg
@@ -121,10 +142,6 @@ INSTALLFLAGS += -m 755
 #        Libraries to link against.  
 LIBS += -lm 
 #
-#   Define the TRE directory (used only for building distributions- note that
-#   this must be HAND-UPDATED when new versions of TRE come out  )
-TRE_TARFILE = tre-0.7.5
-#
 # ---------   If you're compiling under *BSD, check these out:
 #
 #    Simson Garfinkel suggests that you
@@ -140,6 +157,13 @@ TRE_TARFILE = tre-0.7.5
 #CFLAGS += -I/usr/local/include -I${HOME}/include
 #LDFLAGS += -L/usr/local/lib -L${HOME}/lib
 #LIBS += -lintl -liconv
+#
+#    Nico Kadel-Garcia has added these flags for systems without logl or sqrtf
+#  BSD has no logl function
+# CFLAGS += -DNO_LOGL
+#
+#  BSD has no sqrtf function
+# CFLAGS += -DNO_SQRTF
 # ------------------ end of *BSD stuff
 #
 # ------------------For Mac OSX, try this---------------
@@ -157,6 +181,9 @@ TRE_TARFILE = tre-0.7.5
 #  and change final options on the main link line from:
 #
 #   "-lm -ltre -o crm114" to "-ltre -o crm114"
+#
+#  PowerPPC has no sqrtf function
+# CFLAGS += -DNO_SQRTF
 #
 # --------------End of Mac OSX stuff -----------------------
 #
@@ -234,7 +261,7 @@ MEGATESTFILES = \
 #   These are the files needed to build the CRM114 engine; they don't 
 #   include the side utilities
 #
-CFILES = crm_compiler.c crm_errorhandlers.c \
+CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
 	crm_stmt_parser.c crm_vector_tokenize.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
@@ -245,21 +272,25 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_expr_window.c crm_expr_isolate.c crm_expr_file_io.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
-	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
-	crm_stats.c crm_expr_sks.c \
-	crm_expr_svm.c crm_fast_substring_compression.c \
+	crm_preprocessor.c crmregex_tre.c \
+	crm_stats.c crm_expr_sks.c\
+	crm_svm_matrix_util.c crm_svm_quad_prog.c crm_svm_matrix.c\
+	crm_svm_lib_fncts.c crm_svm.c crm_pca_lib_fncts.c crm_pca.c\
+	crm_fast_substring_compression.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
 HFILES = $(MAKEFILE) crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h regex.h crm114_osbf.h \
+	crm114.h crm114_osbf.h crm_svm_matrix_util.h crm_svm_quad_prog.h\
+	crm_svm_matrix.h crm_svm_lib_fncts.h crm_svm.h crm_pca_lib_fncts.h\
+	crm_pca.h \
 	crm_mjt_qsort.h
 
 # extra dependencies to make the code build with both the 'new' autoconf'd
 # and 'old' BillY makefile (this one):
 HFILES += config_vanilla_UNIX_sys_defaults.h
 
-OFILES = crm_compiler.o crm_errorhandlers.o \
+OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
 	crm_stmt_parser.o crm_vector_tokenize.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
@@ -270,12 +301,14 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_expr_window.o crm_expr_isolate.o crm_expr_file_io.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
-	crm_preprocessor.o \
-	crm_expr_sks.o crm_stats.o crm_expr_svm.o \
+	crm_preprocessor.o crmregex_tre.c \
+	crm_expr_sks.o crm_stats.o \
+	crm_svm_matrix_util.o crm_svm_quad_prog.o crm_svm_matrix.o\
+	crm_svm_lib_fncts.o crm_svm.o crm_pca_lib_fncts.o crm_pca.o\
 	crm_fast_substring_compression.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
-#  NOTE - no crmregex_gnu or crmregex_tre here!
+#  NOTE - no crmregex_tre here!
 
 
 UTILFILES = osbf-util.c cssutil.c  cssdiff.c cssmerge.c 
@@ -297,7 +330,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
-	shroud.crm quine.crm \
+	shroud.crm quine.crm alternating_example_svm.crm \
+	alternating_example_pca.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
@@ -312,13 +346,16 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
 	classify_details.txt README CRM114_Mailfilter_HOWTO.txt \
+	Alice_In_Wonderland_Chap_1_And_2.txt Macbeth_Act_IV.txt \
+	Hound_of_the_Baskervilles_first_500_lines.txt \
+	The_Wind_in_the_Willows_Chap_1.txt \
 	procmailrc.recipe reto_procmail_recipe.recipe \
 	priolist.mfp blacklist.mfp whitelist.mfp rewrites.mfp \
 	priolist.mfp.example blacklist.mfp.example whitelist.mfp.example \
 	crm114-mode.el \
 	crm114.spec \
 	inoc_passwd.txt \
-	GPL-License.txt \
+	GPL_License.txt \
 	rename-gz \
 	megatest.sh megatest_knowngood.log \
 	$(MAKEFILE) Makefile.vanilla \
@@ -342,9 +379,9 @@ help: FORCE
 	#    You can make the following things:
 	#
 	#    make   -or-   make all   - builds the binaries.  This uses the
+	#                               
+	#    make crm114              - build CRM binary. This uses the
 	#                               TRE regex library
-	#    make crm114_gnu          - builds version with GNU regex instead
-	#                               of the TRE library.
 	#    make install             - builds and installs the binaries.  
 	#                               You must be root to do this.
 	#    make uninstall           - uninstalls the binaries.  You must
@@ -358,232 +395,40 @@ help: FORCE
 	#    make distribtion         - builds the .gzballs for distribution
         #                               of with your mods built in.
 
-crm114_gnu: crm_main.o $(OFILES) crmregex_gnu.o 
-	#
-	#   Note:  You've chosen to make a GNU regex library CRM114.  
-	#       Although CRM114 will work mostly correctly when
-	#	linked against the GNU regex library, a lot of functionality
-	#       won't be available, and "make megatest" will fail.
-	#
-	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
-	  crmregex_gnu.o \
-	  -lm -o crm114
-
-
-crm114: crm_main.o $(OFILES) crmregex_tre.o
-	#   
-	#   Now building the TRE regex version of CRM114.  If you don't have
-	#   TRE already, you will need to fetch it from the website and
-	#   then ./configure --enable-static to get the static TRE libs,
-	#   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
-	#   to set the library up.  Then you can build CRM114 itself.
-	#
-	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
-	  crmregex_tre.o \
-	  -lm -ltre -o crm114
+crm114: $(OFILES)
+	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
+	  -ltre -lm \
+	  -o crm114
 	#
 	#    Done.  Type "make help" to see what else you can make.
 	#
 
-#
-#     Note To The Reader:  I'd really _love_ to have all of these
-#     stanzas for each of the .c code modules be taken care of by
-#     something that uses $(CFILE), but it isn't.  Maybe the autoconf
-#     version would have that- but one change at a time, eh?
-#
+*.o: $(HFILES)
+.c.o:
+	$(CC)  $(CFLAGS) -c $*.c
 
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o $(HFILES)
+	$(CC)  $(CFLAGS) $(LDFLAGS) cssutil.o \
+		crm_css_maintenance.o \
+		crm_util_errorhandlers.o \
+		crm_str_funcs.o -lm -ltre -o cssutil
 
-crm_main.o: crm_main.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_main.c -o crm_main.o
+osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o $(HFILES)
+	$(CC)  $(CFLAGS) $(LDFLAGS) osbf-util.o \
+		crm_str_funcs.o \
+		crm_util_errorhandlers.o \
+		crm_osbf_maintenance.o -lm -ltre -o osbf-util
 
-crm_compiler.o: crm_compiler.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_compiler.c -o crm_compiler.o
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o $(HFILES)
+	$(CC)  $(CFLAGS) $(LDFLAGS) \
+		crm_util_errorhandlers.o \
+		crm_str_funcs.o -ltre cssdiff.o -o cssdiff
 
-crm_errorhandlers.o: crm_errorhandlers.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_errorhandlers.c -o crm_errorhandlers.o
-
-crm_exec_engine.o: crm_exec_engine.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_exec_engine.c -o crm_exec_engine.o
-
-crm_preprocessor.o: crm_preprocessor.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_preprocessor.c -o crm_preprocessor.o
-
-crm_var_hash_table.o: crm_var_hash_table.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_var_hash_table.c -o crm_var_hash_table.o
-
-crm_math_exec.o: crm_math_exec.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_math_exec.c -o crm_math_exec.o 
-
-crm_expandvar.o: crm_expandvar.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expandvar.c -o crm_expandvar.o
-
-crm_stmt_parser.o: crm_stmt_parser.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_stmt_parser.c -o crm_stmt_parser.o
-
-crm_expr_alter.o: crm_expr_alter.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_alter.c -o crm_expr_alter.o
-
-crm_expr_match.o: crm_expr_match.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_match.c -o crm_expr_match.o
-
-crm_expr_file_io.o: crm_expr_file_io.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_file_io.c -o crm_expr_file_io.o
-
-crm_expr_syscall.o: crm_expr_syscall.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_syscall.c -o crm_expr_syscall.o
-
-crm_expr_classify.o: crm_expr_classify.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_classify.c -o crm_expr_classify.o
-
-crm_expr_translate.o: crm_expr_translate.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_translate.c -o crm_expr_translate.o
-
-crm_expr_window.o: crm_expr_window.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_window.c -o crm_expr_window.o
-
-crm_expr_isolate.o: crm_expr_isolate.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_isolate.c -o crm_expr_isolate.o
-
-crm_css_maintenance.o: crm_css_maintenance.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_css_maintenance.c -o crm_css_maintenance.o
-
-crm_winnow_maintenance.o: crm_winnow_maintenance.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_winnow_maintenance.c -o crm_winnow_maintenance.o
-
-crm_osbf_maintenance.o: crm_osbf_maintenance.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osbf_maintenance.c -o crm_osbf_maintenance.o
-
-crm_markovian.o: crm_markovian.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_markovian.c -o crm_markovian.o
-
-crm_osb_bayes.o: crm_osb_bayes.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_bayes.c -o crm_osb_bayes.o
-
-crm_osbf_bayes.o: crm_osbf_bayes.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osbf_bayes.c -o crm_osbf_bayes.o
-
-crm_osb_hyperspace.o: crm_osb_hyperspace.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_hyperspace.c -o crm_osb_hyperspace.o
-
-crm_expr_sks.o: crm_expr_sks.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_sks.c -o crm_expr_sks.o
-
-crm_expr_svm.o: crm_expr_svm.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_svm.c -o crm_expr_svm.o
-
-crm_fast_substring_compression.o: crm_fast_substring_compression.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_fast_substring_compression.c -o crm_fast_substring_compression.o
-
-crm_expr_clump.o: crm_expr_clump.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_clump.c -o crm_expr_clump.o
-
-crm_stats.o: crm_stats.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_stats.c -o crm_stats.o
-
-crm_neural_net.o: crm_neural_net.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_neural_net.c -o crm_neural_net.o
-
-crm_bit_entropy.o: crm_bit_entropy.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_bit_entropy.c -o crm_bit_entropy.o
-
-crm_osb_winnow.o: crm_osb_winnow.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_winnow.c -o crm_osb_winnow.o
-
-crm_correlate.o: crm_correlate.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_correlate.c -o crm_correlate.o
-
-crm_debugger.o: crm_debugger.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_debugger.c -o crm_debugger.o
-
-crm_str_funcs.o: crm_str_funcs.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_str_funcs.c -o crm_str_funcs.o
-
-crm_vector_tokenize.o: crm_vector_tokenize.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_vector_tokenize.c -o crm_vector_tokenize.o
-
-crmregex_tre.o: crmregex_tre.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crmregex_tre.c -o crmregex_tre.o
-
-crmregex_gnu.o: crmregex_gnu.c $(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -c crmregex_gnu.c -o crmregex_gnu.o
-
-#crm_util_errorhandlers.o: crm_util_errorhandlers.c $(HFILES)
-#	$(CC) $(CFLAGS) -D$(SYSTEMTYPE) -c crm_util_errorhandlers.c \
-#	-o crm_util_errorhandlers.o
-
-crm_generic_port.o: crm_generic_port.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_generic_port.c -o crm_generic_port.o
-
-crm_stdio_port.o: crm_stdio_port.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_stdio_port.c -o crm_stdio_port.o
-
-crm_versioning.o: crm_versioning.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_versioning.c -o crm_versioning.o
-
-
-cssutil: cssutil.c $(OFILES) $(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssutil.c -o cssutil.o  
-	$(CC)  $(CFLAGS) $(LDFLAGS) cssutil.o $(OFILES) \
-	  crmregex_tre.o \
-		-lm -ltre -o cssutil
-
-osbf-util: osbf-util.c $(OFILES) $(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c osbf-util.c -o osbf-util.o  
-	$(CC)  $(CFLAGS) $(LDFLAGS) osbf-util.o $(OFILES) \
-	  crmregex_tre.o \
-		-lm -ltre -o osbf-util
-
-cssdiff: cssdiff.c $(OFILES) $(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssdiff.c -o cssdiff.o
-	$(CC)  $(CFLAGS) $(LDFLAGS) cssdiff.o $(OFILES) \
-	  crmregex_tre.o \
-		-lm -ltre -o cssdiff
-
-cssmerge: cssmerge.c $(OFILES) $(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssmerge.c -o cssmerge.o
-	$(CC)  $(CFLAGS) $(LDFLAGS) cssmerge.o $(OFILES) \
-	  crmregex_tre.o \
-		-lm -ltre -o cssmerge
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o $(HFILES)
+	$(CC)  $(CFLAGS) $(LDFLAGS) \
+		cssmerge.o crm_str_funcs.o \
+		crm_util_errorhandlers.o \
+		-ltre -o cssmerge
 
 clean:
 	-rm -f crm114
@@ -666,6 +511,9 @@ megatest: FORCE
 	diff -U 5 megatest_knowngood.log megatest_test.log & sleep 1
 
 
+neurotest: FORCE
+	./nn_segfault_test.sh
+
 cssfiles: spam.dir good.dir
 	#
 	#   This may take a LONG TIME to run, up to 10 minutes per megabyte
@@ -719,8 +567,6 @@ tarfile: all check_permissions
 	$(CRMFILES) \
 	$(TEXTFILES) \
 	crm114-$(VERSION).src
-	# cp -a $(TRE_TARFILE) crm114-$(VERSION).src
-	cp -a BSD_build_files crm114-$(VERSION).src
 	tar -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
 	rm -rf crm114-$(VERSION).src
 	chmod 0644 crm114-$(VERSION).src.tar
@@ -750,7 +596,7 @@ i386_tarfile: all
 	whitelist.mfp blacklist.mfp priolist.mfp \
 	priolist.mfp.example blacklist.mfp.example whitelist.mfp.example \
 	crm114-mode.el \
-	GPL-License.txt \
+	GPL_License.txt \
 	crm114-$(VERSION).i386
 	tar -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
 	rm -rf crm114-$(VERSION).i386
@@ -777,13 +623,17 @@ css_gzip: css_tarfile
 distribution: src_gzip i386_gzip css_gzip src_7zip
 	md5sum crm114-$(VERSION).*.tar.gz
 
-upload_tarball: i386_gzip
-	rsync -zrltDv crm114-$(VERSION).i386.tar.gz \
+upload_tarball: distribution
+	rsync -zrltDv 	\
+	crm114-$(VERSION).src.tar.gz \
+	crm114-$(VERSION).i386.tar.gz \
 	wsy,crm114@web.sourceforge.net:htdocs/tarballs/
 
 upload_tarball_latest: i386_gzip
 	rsync -zrltDv crm114-$(VERSION).i386.tar.gz \
 	wsy,crm114@web.sourceforge.net:htdocs/tarballs/crm114-latest.i386.tar.gz
+	rsync -zrltDv crm114-$(VERSION).src.tar.gz \
+	wsy,crm114@web.sourceforge.net:htdocs/tarballs/crm114-latest.src.tar.gz
 	echo $(VERSION) > 00-LATEST-IS
 	rsync -auv 00-LATEST-IS \
 	wsy,crm114@web.sourceforge.net:htdocs/tarballs/
@@ -796,10 +646,18 @@ rsync:  FORCE check_permissions
 	  wsy,crm114@web.sourceforge.net:htdocs/src
 
 check_permissions: 
-	find -type d -exec chmod 0755 '{}' \;
-	find -type f -exec chmod 0644 '{}' \;
-	chmod a+x Makefile *.crm *.sh crm114 megatest.sh
-	cd BSD_build_files && \
-	  chmod a+x build_crm114 crm114_P1_Makefile shell_libs
+	#
+	# Setting file permissions
+	#
+	find -name .git -prune -o -type d ! -perm 2775 -exec chmod 2775 '{}' \; -print
+	find -name .git -prune -o -type f \
+		! -name \*\.crm \
+		! -name \*\.sh \
+		! -name crm114 \
+		! -perm 0644 \
+		-exec chmod 0644 '{}' \; -print
+	find -name .git -prune -o -type f -name \*\.crm ! -perm 0755 -exec chmod 0755 '{}' \; -print
+	find -name .git -prune -o -type f -name \*\.sh ! -perm 0755 -exec chmod 0755 '{}' \; -print
+	find -name .git -prune -o -type f -name crm114 ! -perm 0755 -exec chmod 0755 '{}' \; -print
 
 FORCE:

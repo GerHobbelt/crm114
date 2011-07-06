@@ -1,15 +1,20 @@
-#!  /usr/bin/crm 
-#   this program tests approximate regex matching.
+#! /usr/bin/crm
 #
+#	approxtest.crm - test approximate regex matching,
+#		usually reading from approxtest-args.txt
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output / Start of approximate match testing. :*:_nl:/
 isolate (:words:) /molasses anaconda foo bar baz agentsmith mranderson /
 output /:*:_nl:Input string to match against: ":*:words:":*:_nl::*:_nl:/
 isolate (:patterns:)
-input (:patterns:) 
+input (:patterns:)
 isolate (:p:) /bleah/
 {
-	window <eofaccepts> (:p:) (:patterns:) /.*/ /:*:_nl:/ 
+	window <eofaccepts> (:p:) (:patterns:) /.*/ /:*:_nl:/
 	match  (:z: :pa:) [:p:] /(.+)./
 	output /:*:pa:/
 	{
@@ -30,6 +35,6 @@ isolate (:p:) /bleah/
 	}
 	output /:*:_nl:/
 	liaf
-}	
+}
 output / end of approximate match testing. :*:_nl:/
 

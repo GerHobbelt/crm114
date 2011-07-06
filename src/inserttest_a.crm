@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	inserttest_a.crm - test insert processor
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output /\nStart of insert processor testing \n/
 output / start here .../
@@ -7,11 +13,11 @@ output / and the last bit of normal text \n/
 output /now we test nonexistent file overrides \n/
 output /this should not cause a FATAL ERROR, because we trap it.\n/
 {
-    {	
+    {
 	insert there_is_no_such_file_as_this.txt
-    }	
+    }
     output /You should never see this text/
-    #		
+    #
     trap (:my_fault:) /.*/
     {
 	output /We caught the nonexistent file fault here.  Message was:\n <<start of msg>>\n:*:my_fault:\n <<end of msg>> \nvia the TRAP\n/

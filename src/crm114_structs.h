@@ -1,12 +1,7 @@
-//  crm114_structs.h  - Controllable Regex Mutilator structures, version X0.1
-//  Copyright 2001-2009 William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 1.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//  crm114_structs.h  - structures for CRM114
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 #ifndef __CRM114_STRUCTS_H__
 #define __CRM114_STRUCTS_H__
@@ -125,8 +120,8 @@ typedef struct mythical_vht_cell
                          //    wanted to.
     int linenumber;      // linenumber of this variable (if known, else -1)
     int scope_depth;
-    int out_of_scope; // set to !0 when getting out of scope. Implies this variable is 'deleted'
-    int lazy_redirects; // how many lazy redirects are allowed (0 by default);
+    int out_of_scope;    // set to !0 when getting out of scope. Implies this variable is 'deleted'
+    int lazy_redirects;  // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -391,69 +386,73 @@ typedef struct mythical_entropy_cell
 //      figured out a way to do that well.
 
 //      match searchstart flags
-#define CRM_FROMSTART     (1 << 0)
-#define CRM_FROMNEXT      (1 << 1)
-#define CRM_FROMEND       (1 << 2)
-#define CRM_NEWEND        (1 << 3)
-#define CRM_FROMCURRENT   (1 << 4)
+#define CRM_FROMSTART     (1U << 0)
+#define CRM_FROMNEXT      (1U << 1)
+#define CRM_FROMEND       (1U << 2)
+#define CRM_NEWEND        (1U << 3)
+#define CRM_FROMCURRENT   (1U << 4)
 //         match control flags
-#define CRM_NOCASE        (1 << 5)
-#define CRM_ABSENT        (1 << 6)
-#define CRM_BASIC         (1 << 7)
-#define CRM_BACKWARDS     (1 << 8)
-#define CRM_LITERAL       (1 << 9)
-#define CRM_NOMULTILINE   (1 << 10)      // should be merged with byline
+#define CRM_NOCASE        (1U << 5)
+#define CRM_ABSENT        (1U << 6)
+#define CRM_BASIC         (1U << 7)
+#define CRM_BACKWARDS     (1U << 8)
+#define CRM_LITERAL       (1U << 9)
+#define CRM_NOMULTILINE   (1U << 10)
 //         input/output/window flags
-#define CRM_BYLINE        (1 << 10)      //  Should be merged with nomultiline
-#define CRM_BYCHAR        (1 << 11)
+#define CRM_BYLINE        CRM_NOMULTILINE
+#define CRM_BYCHAR        (1U << 11)
 #define CRM_STRING        CRM_BYCHAR     // string is bychar.  I think...
-#define CRM_BYCHUNK       (1 << 12)
-#define CRM_BYEOF         (1 << 13)
-#define CRM_EOFACCEPTS    (1 << 14)
-#define CRM_EOFRETRY      (1 << 15)
-#define CRM_APPEND        (1 << 16)
+#define CRM_BYCHUNK       (1U << 12)
+#define CRM_BYEOF         (1U << 13)
+#define CRM_EOFACCEPTS    (1U << 14)
+#define CRM_EOFRETRY      (1U << 15)
+#define CRM_APPEND        (1U << 16)
 //           process control flags
-#define CRM_KEEP          (1 << 17)
-#define CRM_ASYNC         (1 << 18)
+#define CRM_KEEP          (1U << 17)
+#define CRM_ASYNC         (1U << 18)
 //        learn and classify
-#define CRM_REFUTE        (1 << 19)
-#define CRM_MICROGROOM    (1 << 20)
-#define CRM_MARKOVIAN     (1 << 21)
-#define CRM_OSB_BAYES     (1 << 22)       // synonym with OSB feature gen
+#define CRM_REFUTE        (1U << 19)
+#define CRM_MICROGROOM    (1U << 20)
+#define CRM_MARKOVIAN     (1U << 21)
+#define CRM_OSB_BAYES     (1U << 22)       // synonym with OSB feature gen
 #define CRM_OSB           CRM_OSB_BAYES
-#define CRM_CORRELATE     (1 << 23)
-#define CRM_OSB_WINNOW    (1 << 24)      //  synonym to Winnow feature combiner
+#define CRM_CORRELATE     (1U << 23)
+#define CRM_OSB_WINNOW    (1U << 24)      //  synonym to Winnow feature combiner
 #define CRM_WINNOW        CRM_OSB_WINNOW
-#define CRM_CHI2          (1 << 25)
-#define CRM_UNIQUE        (1 << 26)
-#define CRM_ENTROPY       (1 << 27)
-#define CRM_OSBF          (1 << 28)     // synonym with OSBF local rule
+#define CRM_CHI2          (1U << 25)
+#define CRM_UNIQUE        (1U << 26)
+#define CRM_ENTROPY       (1U << 27)
+#define CRM_OSBF          (1U << 28)     // synonym with OSBF local rule
 #define CRM_OSBF_BAYES    CRM_OSBF
-#define CRM_HYPERSPACE    (1 << 29)
-#define CRM_UNIGRAM       (1 << 30)
-#define CRM_CROSSLINK     (1LL << 31)
+#define CRM_HYPERSPACE    (1U << 29)
+#define CRM_UNIGRAM       (1U << 30)
+#define CRM_CROSSLINK     (1LLU << 31)
 //
 //        Flags that need to be sorted back in
 //           input
-#define CRM_READLINE      (1LL << 32)
+#define CRM_READLINE      (1LLU << 32)
 //           isolate flags
-#define CRM_DEFAULT       (1LL << 33)
+#define CRM_DEFAULT       (1LLU << 33)
 //           SKS classifier
-#define CRM_SKS           (1LL << 34)
+#define CRM_SKS           (1LLU << 34)
 //           SVM classifier
-#define CRM_SVM           (1LL << 35)
+#define CRM_SVM           (1LLU << 35)
 //           FSCM classifier
-#define CRM_FSCM          (1LL << 36)
+#define CRM_FSCM          (1LLU << 36)
 //           Neural Net classifier
-#define CRM_NEURAL_NET    (1LL << 37)
+#define CRM_NEURAL_NET    (1LLU << 37)
+//
+#define CRM_ERASE         (1LLU << 38)
+//PCA classifier
+#define CRM_PCA           (1LLU << 39)
 
-#define CRM_AUTODETECT    (1LL << 38)
+#define CRM_AUTODETECT    (1LLU << 40)
 
-#define CRM_ALT_MARKOVIAN     (1LL << 39)
-#define CRM_ALT_OSB_BAYES     (1LL << 40)
-#define CRM_ALT_OSB_WINNOW    (1LL << 41)
-#define CRM_ALT_OSBF          (1LL << 42)
-#define CRM_ALT_HYPERSPACE    (1LL << 43)
+#define CRM_ALT_MARKOVIAN     (1LL << 41)
+#define CRM_ALT_OSB_BAYES     (1LL << 42)
+#define CRM_ALT_OSB_WINNOW    (1LL << 43)
+#define CRM_ALT_OSBF          (1LL << 44)
+#define CRM_ALT_HYPERSPACE    (1LL << 45)
 
 
 

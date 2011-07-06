@@ -1,14 +1,13 @@
-//  crm_expandvar.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.
-//
-//  Other licenses may be negotiated; contact the
-//  author for details.
-//
+//	crm_expandvar.c - expand variables
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
+
+
+
+// TODO check the new common routine for 'box restriction' : crm_exec_box_restriction()
+
 
 
 /* [i_a] GROT GROT GROT
@@ -1384,3 +1383,60 @@ void cleanup_expandvar_allocations(void)
 }
 
 
+
+
+
+// TODO: inspect this bugger below:
+
+
+
+
+// Common code for LEARN/CLASSIFY/CLUMP/PMULC: parse "box restriction"
+// from language line (name of input variable, optional selections of
+// subset of value); if bad do language TRAP/FAIL.
+//
+// Return value is what crm_restrictvar() returns.  Also returns
+// pointer to input text through three arguments, and modification of
+// language state.
+
+long crm_exec_box_restriction(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+			      char **txt, long *start, long *len)
+{
+  char box_text[MAX_PATTERN];
+  char errstr[MAX_PATTERN];
+  long ret;
+
+  // copy text from [] on language line
+  crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+
+  //  Use crm_restrictvar to get start & length to look at.
+  ret = crm_restrictvar(box_text, apb->b1len,
+		      NULL,
+		      txt,
+		      start,
+		      len,
+		      errstr);
+
+  if (ret < 0)
+    {
+      long curstmt;
+
+      curstmt = csl->cstmt;
+      // [non]fatalerror5() always return 0, if they return at all,
+      // so no point looking at it
+      if (ret == -1)
+	(void)nonfatalerror5 (errstr, "", CRM_ENGINE_HERE);
+      if (ret == -2)
+	(void)fatalerror5 (errstr, "", CRM_ENGINE_HERE);
+      //
+      //     Did the FAULT handler change the next statement to execute?
+      //     If so, continue from there, otherwise, we FAIL.
+      if (curstmt == csl->cstmt)
+	{
+	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
+	};
+    };
+
+  return ret;
+}
